@@ -277,7 +277,7 @@ function seed() {
     swiftpay_api_secret: process.env.SWIFTPAY_API_SECRET || process.env.SWIFTPAY_SECRET_KEY || '',
     swiftpay_webhook_secret: process.env.SWIFTPAY_WEBHOOK_SECRET || '',
     magpie_enabled: process.env.MAGPIE_ENABLED === '1' || !!(process.env.MAGPIE_API_KEY || process.env.MAGPIE_SECRET_KEY) ? '1' : '0',
-    magpie_api_base_url: process.env.MAGPIE_API_BASE_URL || (/^((sk|pk)_live_)/i.test(process.env.MAGPIE_SECRET_KEY || process.env.MAGPIE_PUBLISHABLE_KEY || '') ? 'https://api.magpie.im' : 'https://api.sandbox.magpie.im'),
+    magpie_api_base_url: process.env.MAGPIE_API_BASE_URL || '',
     magpie_api_key: process.env.MAGPIE_API_KEY || process.env.MAGPIE_SECRET_KEY || '',
     magpie_api_secret: process.env.MAGPIE_API_SECRET || process.env.MAGPIE_PUBLISHABLE_KEY || '',
     magpie_webhook_secret: process.env.MAGPIE_WEBHOOK_SECRET || '',
