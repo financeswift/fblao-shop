@@ -2,9 +2,15 @@
 
 <div class="card narrow">
   <% if (order.status === 'delivered') { %>
+    <div class="success-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
     <div class="status-pill status-delivered">Delivered</div>
     <h2>Thank you! Your order is complete. / 订单已完成</h2>
   <% } else if (order.status === 'paid') { %>
+    <div class="success-icon" style="background: rgba(39,174,96,0.1); border-color: rgba(39,174,96,0.2);">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
     <div class="status-pill status-paid">Paid</div>
     <h2>Payment received — preparing your delivery. / 已收款，正在发货</h2>
   <% } else if (order.status === 'failed') { %>
@@ -19,7 +25,15 @@
   <% } %>
 
   <table class="kv">
-    <tr><th>Order number</th><td><strong><%= order.order_number %></strong></td></tr>
+    <tr>
+      <th>Order number</th>
+      <td>
+        <strong><%= order.order_number %></strong>
+        <button class="btn btn-sm" style="padding: 2px 8px; font-size: 10px; margin-left: 8px;" onclick="copyOrderNum('<%= order.order_number %>', this)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy
+        </button>
+      </td>
+    </tr>
     <tr>
       <th>Payment Method</th>
       <td>
@@ -45,7 +59,11 @@
     <div class="instructions">
       <h3>Payment instructions / 支付说明 — <%= manualMethod.name %></h3>
       <div class="instructions-body"><%- nl2br(manualMethod.instructions) %></div>
-      <p class="ref-note">Use your order number <strong><%= order.order_number %></strong> as the payment reference.</p>
+      <p class="ref-note">Use your order number <strong><%= order.order_number %></strong> as the payment reference.
+        <button class="btn btn-sm" style="padding: 2px 8px; font-size: 10px; margin-left: 8px;" onclick="copyOrderNum('<%= order.order_number %>', this)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy
+        </button>
+      </p>
     </div>
   <% } %>
 
@@ -58,10 +76,25 @@
     <p class="muted">Your payment is confirmed. Your goods will appear here soon. / 付款已确认，商品内容将很快显示在这里。</p>
   <% } %>
 
+  <% var shareUrl = baseUrl + '/status?ref=' + order.order_number + '&tg=' + (order.telegram_username || ''); %>
   <div class="actions">
     <a class="btn" href="/status">Check this order later / 稍后查询</a>
     <a class="btn btn-light" href="/">Back to shop / 返回商店</a>
+    <button class="btn btn-light" onclick="copyOrderNum('<%= shareUrl %>', this)" title="Copy shareable order link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>Share Link
+    </button>
   </div>
 </div>
 
+<script>
+function copyOrderNum(val, btn) {
+  navigator.clipboard.writeText(val).then(function() {
+    var old = btn.innerHTML;
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.innerHTML = old; }, 1500);
+  });
+}
+</script>
+
 <%- include('partials/foot') %>
+

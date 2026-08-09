@@ -3,14 +3,14 @@
 <div class="card narrow">
   <h2>Order Status / 订单查询</h2>
   <p class="muted">Enter your Telegram username and order number to check your order status and view delivered product details after payment. / 输入电报用户名和订单号即可查询订单状态，并在付款后查看发货内容。</p>
-  <form method="POST" action="/status" class="stack">
+  <form method="POST" action="/status" class="stack" id="statusForm">
     <label class="field">
       <span>Telegram Username / 电报用户名</span>
-      <input type="text" name="telegram_username" required placeholder="@username" value="<%= user ? user.username : '' %>">
+      <input type="text" name="telegram_username" id="statusTg" required placeholder="@username" value="<%= user ? user.username : '' %>">
     </label>
     <label class="field">
       <span>Order number / 订单号</span>
-      <input type="text" name="order_number" required placeholder="LK-XXXXXXXX">
+      <input type="text" name="order_number" id="statusOrderNum" required placeholder="LK-XXXXXXXX">
     </label>
 
     <% if (settings.cf_turnstile_site_key) { %>
@@ -28,6 +28,22 @@
 
   <% if (order) { %>
     <hr>
+
+    <!-- Progress stepper -->
+    <div class="order-stepper">
+      <% var steps = ['pending', 'paid', 'delivered']; %>
+      <% var failedOrCancelled = order.status === 'failed' || order.status === 'cancelled'; %>
+      <% var statusIdx = steps.indexOf(order.status); %>
+      <% steps.forEach(function(s, i){ %>
+        <% var isDone = !failedOrCancelled && statusIdx > i; %>
+        <% var isActive = !failedOrCancelled && statusIdx === i; %>
+        <div class="step-item <%= isDone ? 'is-done' : '' %> <%= isActive ? 'is-active' : '' %> <%= failedOrCancelled && i === 0 ? 'is-failed' : '' %>">
+          <div class="step-dot"><%= isDone ? '✓' : i + 1 %></div>
+          <span class="step-label"><%= s === 'pending' ? 'Pending' : s === 'paid' ? 'Paid' : 'Delivered' %></span>
+        </div>
+      <% }) %>
+    </div>
+
     <div style="text-align: center; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
         <div class="status-pill status-<%= order.status %>" style="font-size: 1.2rem; padding: 8px 24px; margin:0;"><%= order.status.toUpperCase() %></div>
         <% if (user && user.username === order.telegram_username) { %>
@@ -41,7 +57,9 @@
             <th style="padding: 12px; background: rgba(255,255,255,0.02);">Order Number</th>
             <td style="padding: 12px;">
               <strong><%= order.order_number %></strong>
-              <button class="btn btn-sm" style="padding: 2px 6px; font-size: 10px; margin-left: 10px;" onclick="copyStatusVal('<%= order.order_number %>', this)">Copy</button>
+              <button class="btn btn-sm" style="padding: 2px 8px; font-size: 10px; margin-left: 10px;" onclick="copyStatusVal('<%= order.order_number %>', this)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy
+              </button>
             </td>
           </tr>
           <tr style="border-bottom: 1px solid var(--border);">
@@ -52,8 +70,15 @@
           <tr style="border-bottom: 1px solid var(--border);">
             <th style="padding: 12px; background: rgba(255,255,255,0.02);">Username</th>
             <td style="padding: 12px;">
-              <code id="val-user"><%= order.acc_username %></code>
-              <button class="btn btn-sm" style="padding: 2px 6px; font-size: 10px; margin-left: 10px;" onclick="copyStatusVal('<%= order.acc_username %>', this)">Copy</button>
+              <div class="cred-wrap" style="display:flex;align-items:center;gap:8px;">
+                <code id="val-user" class="cred-hidden"><%= order.acc_username %></code>
+                <button class="btn btn-sm" style="padding: 2px 8px; font-size: 10px;" onclick="copyStatusVal('<%= order.acc_username %>', this)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy
+                </button>
+                <button type="button" class="btn btn-sm" onclick="toggleCred('val-user',this)" style="padding: 2px 8px; font-size: 10px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Show
+                </button>
+              </div>
             </td>
           </tr>
           <% } %>
@@ -61,8 +86,15 @@
           <tr style="border-bottom: 1px solid var(--border);">
             <th style="padding: 12px; background: rgba(255,255,255,0.02);">Password</th>
             <td style="padding: 12px;">
-              <code id="val-pass"><%= order.acc_password %></code>
-              <button class="btn btn-sm" style="padding: 2px 6px; font-size: 10px; margin-left: 10px;" onclick="copyStatusVal('<%= order.acc_password %>', this)">Copy</button>
+              <div class="cred-wrap" style="display:flex;align-items:center;gap:8px;">
+                <code id="val-pass" class="cred-hidden"><%= order.acc_password %></code>
+                <button class="btn btn-sm" style="padding: 2px 8px; font-size: 10px;" onclick="copyStatusVal('<%= order.acc_password %>', this)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy
+                </button>
+                <button type="button" class="btn btn-sm" onclick="toggleCred('val-pass',this)" style="padding: 2px 8px; font-size: 10px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Show
+                </button>
+              </div>
             </td>
           </tr>
           <% } %>
@@ -86,7 +118,7 @@
           </tr>
           <tr style="border-bottom: 1px solid var(--border);">
             <th style="padding: 12px; background: rgba(255,255,255,0.02);">Placed On</th>
-            <td style="padding: 12px;"><%= date(order.created_at) %></td>
+            <td style="padding: 12px;"><%= date(order.created_at) %> <span class="muted" style="font-size:12px;">(<%= timeAgo(order.created_at) %>)</span></td>
           </tr>
           <tr style="border-bottom: 1px solid var(--border);">
             <th style="padding: 12px; background: rgba(255,255,255,0.02);">Payment Method</th>
@@ -112,7 +144,11 @@
       <div class="instructions">
         <h3>Payment instructions — <%= manualMethod.name %></h3>
         <div class="instructions-body"><%- nl2br(manualMethod.instructions) %></div>
-        <p class="ref-note">Reference: <strong><%= order.order_number %></strong></p>
+        <p class="ref-note">Reference: <strong><%= order.order_number %></strong>
+          <button class="btn btn-sm" style="padding: 2px 8px; font-size: 10px; margin-left: 8px;" onclick="copyStatusVal('<%= order.order_number %>', this)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy
+          </button>
+        </p>
       </div>
     <% } %>
 
@@ -120,7 +156,9 @@
       <div class="delivery">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <h3 style="margin:0;">Your delivery credentials</h3>
-          <button class="btn btn-sm" onclick="copyStatusVal(document.getElementById('delivery-content').innerText, this)">Copy All</button>
+          <button class="btn btn-sm" onclick="copyStatusVal(document.getElementById('delivery-content').innerText, this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy All
+          </button>
         </div>
         <p class="ref-note">Your product is shown below and stays available on this page when you look up the same Telegram username and order number again. / 您的商品内容显示在下方，之后再次使用相同的电报用户名和订单号查询时，仍可在此页面查看。</p>
         <pre class="delivery-body" id="delivery-content"><%= order.delivered_content %></pre>
@@ -135,14 +173,36 @@
 
 <script>
 function copyStatusVal(val, btn) {
-  navigator.clipboard.writeText(val).then(() => {
-    const oldText = btn.innerText;
-    btn.innerText = 'Copied!';
-    setTimeout(() => {
-      btn.innerText = oldText;
-    }, 1500);
+  navigator.clipboard.writeText(val).then(function() {
+    var oldText = btn.innerHTML;
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.innerHTML = oldText; }, 1500);
   });
 }
+function toggleCred(id, btn) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var hidden = el.classList.toggle('cred-hidden');
+  btn.innerHTML = hidden
+    ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Show'
+    : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg> Hide';
+}
+// Auto-submit from URL params
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var ref = params.get('ref');
+  var tg  = params.get('tg');
+  if (ref && tg) {
+    var tgInput = document.getElementById('statusTg');
+    var numInput = document.getElementById('statusOrderNum');
+    if (tgInput && numInput && !tgInput.value) {
+      tgInput.value = tg;
+      numInput.value = ref;
+      document.getElementById('statusForm').submit();
+    }
+  }
+})();
 </script>
 
 <%- include('partials/foot') %>
+

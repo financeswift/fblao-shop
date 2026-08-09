@@ -5,11 +5,44 @@
   <div class="subpanel">
     <h2>Shop</h2>
     <form method="POST" action="/admin/settings">
-      <label class="field"><span>Shop name</span><input type="text" name="shop_name" value="<%= escapeHtml(s.shop_name) %>"></label>
-      <label class="field"><span>Tagline</span><input type="text" name="shop_tagline" value="<%= escapeHtml(s.shop_tagline) %>"></label>
+      <label class="field">
+        <span>Shop name</span>
+        <input type="text" name="shop_name" id="previewShopName" value="<%= escapeHtml(s.shop_name) %>">
+        <div class="settings-preview-label">Preview</div>
+        <div class="settings-preview-box" id="shopNamePreview"><%= escapeHtml(s.shop_name) %></div>
+      </label>
+      <label class="field">
+        <span>Tagline</span>
+        <input type="text" name="shop_tagline" id="previewTagline" value="<%= escapeHtml(s.shop_tagline) %>">
+        <div class="settings-preview-label">Preview</div>
+        <div class="settings-preview-box" id="taglinePreview" style="font-weight:normal;font-size:13px;color:var(--muted);"><%= escapeHtml(s.shop_tagline) %></div>
+      </label>
+      <label class="field">
+        <span>Hero headline <small class="muted">(shown in store banner)</small></span>
+        <input type="text" name="shop_hero_headline" id="previewHeroHeadline" value="<%= escapeHtml(s.shop_hero_headline || '') %>" placeholder="Fast checkout, clear pricing, and easy order tracking.">
+      </label>
+      <label class="field">
+        <span>Footer brand text <small class="muted">(shining gold text in footer, leave blank to hide)</small></span>
+        <input type="text" name="shop_horse_text" value="<%= escapeHtml(s.shop_horse_text || '') %>" placeholder="e.g. BlackHorse">
+      </label>
       <label class="field"><span>Currency code</span><input type="text" name="currency" value="<%= escapeHtml(s.currency) %>"></label>
       <button class="btn btn-primary" type="submit">Save shop settings</button>
     </form>
+
+    <script>
+    (function() {
+      function bind(inputId, previewId) {
+        var input = document.getElementById(inputId);
+        var preview = document.getElementById(previewId);
+        if (!input || !preview) return;
+        input.addEventListener('input', function() {
+          preview.textContent = input.value || '—';
+        });
+      }
+      bind('previewShopName', 'shopNamePreview');
+      bind('previewTagline', 'taglinePreview');
+    })();
+    </script>
 
     <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
 

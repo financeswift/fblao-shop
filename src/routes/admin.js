@@ -509,6 +509,8 @@ router.get('/settings', (req, res) => {
     s: {
       shop_name: getSetting('shop_name', ''),
       shop_tagline: getSetting('shop_tagline', ''),
+      shop_hero_headline: getSetting('shop_hero_headline', ''),
+      shop_horse_text: getSetting('shop_horse_text', ''),
       currency: getSetting('currency', 'PHP'),
       maya_enabled: getSetting('maya_enabled', '0'),
       maya_mode: getSetting('maya_mode', 'sandbox'),
@@ -595,6 +597,8 @@ router.post('/settings/db-restore', upload.single('db_file'), (req, res) => {
 router.post('/settings', (req, res) => {
   setSetting('shop_name', String(req.body.shop_name || '').trim());
   setSetting('shop_tagline', String(req.body.shop_tagline || '').trim());
+  setSetting('shop_hero_headline', String(req.body.shop_hero_headline || '').trim());
+  setSetting('shop_horse_text', String(req.body.shop_horse_text || '').trim());
   setSetting('currency', String(req.body.currency || 'PHP').trim().toUpperCase());
   flash(req, 'Shop settings saved.');
   res.redirect('/admin/settings');

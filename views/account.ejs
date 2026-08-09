@@ -20,8 +20,22 @@
       <a href="/" class="btn btn-primary">Go to Shop</a>
     </div>
   <% } else { %>
-    <div class="table-wrap">
-      <table class="product-table">
+
+    <%
+      var statusCounts = {};
+      orders.forEach(function(o) {
+        statusCounts[o.status] = (statusCounts[o.status] || 0) + 1;
+      });
+    %>
+    <div class="status-filter-chips" id="orderFilterChips">
+      <button type="button" class="status-chip is-active" data-filter="all">All <span class="chip-count"><%= orders.length %></span></button>
+      <% Object.keys(statusCounts).forEach(function(s) { %>
+        <button type="button" class="status-chip" data-filter="<%= s %>"><%= s.charAt(0).toUpperCase() + s.slice(1) %> <span class="chip-count"><%= statusCounts[s] %></span></button>
+      <% }) %>
+    </div>
+
+    <div class="table-wrap" id="ordersTableWrap">
+      <table class="product-table" id="ordersTable">
         <thead>
           <tr>
             <th>Order #</th>
@@ -34,21 +48,136 @@
         </thead>
         <tbody>
           <% orders.forEach(function(o){ %>
-            <tr>
+            <tr data-order-status="<%= o.status %>">
               <td><strong><%= o.order_number %></strong></td>
               <td><%= o.product_name %> &times; <%= o.quantity %></td>
               <td class="col-price"><%= money(o.total) %></td>
               <td><span class="status-pill status-<%= o.status %>"><%= o.status.toUpperCase() %></span></td>
-              <td class="muted"><%= o.created_at %></td>
-              <td style="text-align: right;">
-                <a href="/status?ref=<%= o.order_number %>&tg=<%= o.telegram_username %>" class="btn btn-sm">View Details</a>
+              <td class="muted" style="font-size:13px;"><%= date(o.created_at) %></td>
+              <td style="text-align: right; white-space: nowrap;">
+                <% if (o.status === 'delivered' && o.delivered_content) { %>
+                  <button type="button" class="btn btn-sm" onclick="toggleDelivery('<%= o.order_number %>')">View</button>
+                <% } else { %>
+                  <a href="/status?ref=<%= o.order_number %>&tg=<%= o.telegram_username %>" class="btn btn-sm">Details</a>
+                <% } %>
               </td>
             </tr>
+            <% if (o.status === 'delivered' && o.delivered_content) { %>
+            <tr class="delivery-row" id="delivery-<%= o.order_number %>" style="display:none;">
+              <td colspan="6">
+                <div class="delivery-inline is-open">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <strong style="font-size:13px;">Delivery for <%= o.order_number %></strong>
+                    <div style="display:flex;gap:6px;">
+                      <button class="btn btn-sm" onclick="copyText('<%= o.order_number %>-content', this)" style="font-size:11px;">Copy All</button>
+                      <a href="/status?ref=<%= o.order_number %>&tg=<%= o.telegram_username %>" class="btn btn-sm" style="font-size:11px;">Full Details</a>
+                    </div>
+                  </div>
+                  <pre id="<%= o.order_number %>-content"><%= o.delivered_content %></pre>
+                </div>
+              </td>
+            </tr>
+            <% } %>
           <% }) %>
         </tbody>
       </table>
     </div>
+    <div class="pagination-bar" id="paginationBar">
+      <span id="pageInfo" class="muted"></span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" id="prevPageBtn">← Prev</button>
+        <button class="btn btn-sm" id="nextPageBtn">Next →</button>
+      </div>
+    </div>
   <% } %>
 </div>
 
+<script>
+function toggleDelivery(orderNum) {
+  var row = document.getElementById('delivery-' + orderNum);
+  if (!row) return;
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+function copyText(id, btn) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.innerText).then(function() {
+    var old = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = old; }, 1500);
+  });
+}
+
+// Status filter chips
+var chips = document.querySelectorAll('#orderFilterChips .status-chip');
+var rows = Array.prototype.slice.call(document.querySelectorAll('#ordersTable tbody tr[data-order-status]'));
+var activeFilter = 'all';
+
+function applyFilter() {
+  rows.forEach(function(row) {
+    var s = row.getAttribute('data-order-status');
+    var show = activeFilter === 'all' || s === activeFilter;
+    row.style.display = show ? '' : 'none';
+    // also hide associated delivery rows
+    var next = row.nextElementSibling;
+    if (next && next.classList.contains('delivery-row')) {
+      if (!show) next.style.display = 'none';
+    }
+  });
+  applyPagination();
+}
+chips.forEach(function(chip) {
+  chip.addEventListener('click', function() {
+    chips.forEach(function(c) { c.classList.remove('is-active'); });
+    chip.classList.add('is-active');
+    activeFilter = chip.getAttribute('data-filter');
+    currentPage = 1;
+    applyFilter();
+  });
+});
+
+// Pagination
+var PAGE_SIZE = 10;
+var currentPage = 1;
+
+function visibleRows() {
+  return rows.filter(function(r) { return r.style.display !== 'none'; });
+}
+function applyPagination() {
+  var visible = visibleRows();
+  var total = visible.length;
+  var totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  var start = (currentPage - 1) * PAGE_SIZE;
+  var end = start + PAGE_SIZE;
+
+  visible.forEach(function(row, i) {
+    var show = i >= start && i < end;
+    row.style.display = show ? '' : 'none';
+    var next = row.nextElementSibling;
+    if (next && next.classList.contains('delivery-row')) {
+      if (!show) next.style.display = 'none';
+    }
+  });
+
+  var pageInfo = document.getElementById('pageInfo');
+  var prevBtn = document.getElementById('prevPageBtn');
+  var nextBtn = document.getElementById('nextPageBtn');
+  if (pageInfo) pageInfo.textContent = total + ' orders · Page ' + currentPage + ' of ' + totalPages;
+  if (prevBtn) prevBtn.disabled = currentPage <= 1;
+  if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+
+  var bar = document.getElementById('paginationBar');
+  if (bar) bar.style.display = total <= PAGE_SIZE ? 'none' : '';
+}
+
+var prevBtn = document.getElementById('prevPageBtn');
+var nextBtn = document.getElementById('nextPageBtn');
+if (prevBtn) prevBtn.addEventListener('click', function() { if (currentPage > 1) { currentPage--; applyFilter(); } });
+if (nextBtn) nextBtn.addEventListener('click', function() { currentPage++; applyFilter(); });
+
+applyFilter();
+</script>
+
 <%- include('partials/foot') %>
+

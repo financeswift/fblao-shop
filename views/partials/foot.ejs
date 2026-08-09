@@ -5,61 +5,72 @@
       <img src="/logo.png" alt="<%= escapeHtml(shopName) %>" loading="lazy">
     </div>
 
-    <!-- BlackHorse text with shining gold effect -->
+    <% if (settings.shop_horse_text) { %>
     <div class="footer-horse">
-      <span class="shining-gold horse-tagline">BlackHorse</span>
+      <span class="shining-gold horse-tagline"><%= settings.shop_horse_text %></span>
     </div>
+    <% } %>
+
+    <!-- Quick navigation links -->
+    <nav class="footer-nav">
+      <a href="/">Shop</a>
+      <a href="/status">Order Status</a>
+      <% if (user) { %><a href="/account">My Account</a><% } %>
+      <a href="/admin">Admin</a>
+    </nav>
 
     <!-- E-wallets & Cards -->
     <div class="footer-icon-group">
       <span class="footer-icon-label">E-Wallets &amp; Cards</span>
       <div class="payment-methods">
-        <img class="payment-icon payment-icon-visa" src="<%= getIcon('visa') %>" alt="Visa">
-        <img class="payment-icon payment-icon-mastercard" src="<%= getIcon('mastercard') %>" alt="Mastercard">
-        <img class="payment-icon" src="<%= getIcon('jcb') %>" alt="JCB">
-        <img class="payment-icon" src="<%= getIcon('amex') %>" alt="Amex">
-        <img class="payment-icon" src="<%= getIcon('gcash') %>" alt="GCash">
-        <img class="payment-icon" src="<%= getIcon('maya') %>" alt="Maya">
+        <img class="payment-icon payment-icon-visa" src="<%= getIcon('visa') %>" alt="Visa" loading="lazy">
+        <img class="payment-icon payment-icon-mastercard" src="<%= getIcon('mastercard') %>" alt="Mastercard" loading="lazy">
+        <img class="payment-icon" src="<%= getIcon('jcb') %>" alt="JCB" loading="lazy">
+        <img class="payment-icon" src="<%= getIcon('amex') %>" alt="Amex" loading="lazy">
+        <img class="payment-icon" src="<%= getIcon('gcash') %>" alt="GCash" loading="lazy">
+        <img class="payment-icon" src="<%= getIcon('maya') %>" alt="Maya" loading="lazy">
         <% if (coinsEnabled) { %>
-          <img class="payment-icon" src="<%= getIcon('coins') %>" alt="Coins.ph">
+          <img class="payment-icon" src="<%= getIcon('coins') %>" alt="Coins.ph" loading="lazy">
         <% } %>
         <% if (paymongoEnabled) { %>
-          <img class="payment-icon" src="<%= getIcon('paymongo') %>" alt="PayMongo">
+          <img class="payment-icon" src="<%= getIcon('paymongo') %>" alt="PayMongo" loading="lazy">
         <% } %>
         <% if (xenditEnabled) { %>
-          <img class="payment-icon" src="<%= getIcon('xendit') %>" alt="Xendit">
+          <img class="payment-icon" src="<%= getIcon('xendit') %>" alt="Xendit" loading="lazy">
         <% } %>
         <% if (swiftpayEnabled) { %>
-          <img class="payment-icon" src="<%= getIcon('swiftpay') %>" alt="Swiftpay PH">
+          <img class="payment-icon" src="<%= getIcon('swiftpay') %>" alt="Swiftpay PH" loading="lazy">
         <% } %>
         <% if (magpieEnabled) { %>
-          <img class="payment-icon" src="<%= getIcon('alipay') %>" alt="Alipay">
-          <img class="payment-icon" src="<%= getIcon('wechat') %>" alt="WeChat Pay">
+          <img class="payment-icon" src="<%= getIcon('alipay') %>" alt="Alipay" loading="lazy">
+          <img class="payment-icon" src="<%= getIcon('wechat') %>" alt="WeChat Pay" loading="lazy">
         <% } %>
         <% footerMethods.forEach(function(m){ %>
           <% var icon = getIcon(m.name, m.icon_url); %>
           <% if (icon && !['visa','mastercard','maya','paymaya','paymongo','xendit','coins','coins.ph','coinsph','swiftpay','swiftpay ph','swiftpayph','gcash','jcb','amex','alipay','wechat','bpi','bdo','unionbank','union bank','metrobank','rcbc','landbank','land bank','securitybank','security bank','chinabank','china bank','pnb'].some(v => m.name.toLowerCase().includes(v))) { %>
-            <img class="payment-icon" src="<%= icon %>" alt="<%= m.name %>">
+            <img class="payment-icon" src="<%= icon %>" alt="<%= m.name %>" loading="lazy">
           <% } %>
         <% }) %>
       </div>
     </div>
 
+    <% if (swiftpayEnabled) { %>
     <!-- Major Banks -->
     <div class="footer-icon-group">
       <span class="footer-icon-label">Major Banks</span>
       <div class="payment-methods payment-methods-banks">
-        <img class="payment-icon payment-icon-bank" src="<%= getIcon('bpi') %>" alt="BPI">
-        <img class="payment-icon payment-icon-bank" src="<%= getIcon('bdo') %>" alt="BDO">
-        <img class="payment-icon payment-icon-bank" src="<%= getIcon('unionbank') %>" alt="UnionBank">
-        <img class="payment-icon payment-icon-bank" src="<%= getIcon('metrobank') %>" alt="Metrobank">
-        <img class="payment-icon payment-icon-bank" src="<%= getIcon('rcbc') %>" alt="RCBC">
-        <img class="payment-icon payment-icon-bank" src="<%= getIcon('landbank') %>" alt="LandBank">
-        <img class="payment-icon payment-icon-bank" src="<%= getIcon('pnb') %>" alt="PNB">
-        <img class="payment-icon payment-icon-bank" src="<%= getIcon('securitybank') %>" alt="Security Bank">
-        <img class="payment-icon payment-icon-bank" src="<%= getIcon('chinabank') %>" alt="China Bank">
+        <img class="payment-icon payment-icon-bank" src="<%= getIcon('bpi') %>" alt="BPI" loading="lazy">
+        <img class="payment-icon payment-icon-bank" src="<%= getIcon('bdo') %>" alt="BDO" loading="lazy">
+        <img class="payment-icon payment-icon-bank" src="<%= getIcon('unionbank') %>" alt="UnionBank" loading="lazy">
+        <img class="payment-icon payment-icon-bank" src="<%= getIcon('metrobank') %>" alt="Metrobank" loading="lazy">
+        <img class="payment-icon payment-icon-bank" src="<%= getIcon('rcbc') %>" alt="RCBC" loading="lazy">
+        <img class="payment-icon payment-icon-bank" src="<%= getIcon('landbank') %>" alt="LandBank" loading="lazy">
+        <img class="payment-icon payment-icon-bank" src="<%= getIcon('pnb') %>" alt="PNB" loading="lazy">
+        <img class="payment-icon payment-icon-bank" src="<%= getIcon('securitybank') %>" alt="Security Bank" loading="lazy">
+        <img class="payment-icon payment-icon-bank" src="<%= getIcon('chinabank') %>" alt="China Bank" loading="lazy">
       </div>
     </div>
+    <% } %>
 
     <p>&copy; <%= shopName %>. All accounts are for authorized use only.</p>
     <p>Current Time (PH): <span id="live-clock" style="color: var(--accent); font-weight: bold; font-family: ui-monospace, monospace;"><%= date(new Date().toISOString()) %></span></p>

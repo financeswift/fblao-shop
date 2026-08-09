@@ -3,17 +3,20 @@
 <section class="store-hero card">
   <div>
     <p class="store-hero-kicker">Minimal storefront · 中文买家友好</p>
-    <h1>Fast checkout, clear pricing, and easy order tracking.</h1>
+    <h1><%= settings.shop_hero_headline || 'Fast checkout, clear pricing, and easy order tracking.' %></h1>
     <p class="store-hero-copy">Browse products quickly, see stock at a glance, and use the payment method that fits you best.</p>
   </div>
   <div class="store-hero-chips">
     <span class="hero-chip">Simple layout / 极简布局</span>
-    <span class="hero-chip">Live stock / 实时库存</span>
     <span class="hero-chip">Order lookup / 订单查询</span>
     <% if (magpieEnabled) { %>
       <span class="hero-chip">Alipay 支付宝</span>
       <span class="hero-chip">WeChat Pay 微信支付</span>
       <span class="hero-chip">CNY-friendly 人民币友好</span>
+    <% } %>
+    <% var totalInStock = catalog.reduce(function(t, cat){ return t + cat.products.filter(function(p){ return p.stock > 0; }).length; }, 0); %>
+    <% if (totalInStock > 0) { %>
+      <span class="hero-stock-badge"><span class="hero-stock-dot"></span><%= totalInStock %> items in stock / <%= totalInStock %> 款有货</span>
     <% } %>
   </div>
 </section>
@@ -53,6 +56,24 @@
         <span>Max price / 最高价</span>
         <input type="number" id="catalogMaxPrice" min="0" step="0.01" placeholder="9999.00">
       </label>
+      <label class="field">
+        <span>Category / 分类</span>
+        <select id="catalogCategory" class="catalog-sort-select">
+          <option value="">All categories</option>
+          <% catalog.forEach(function(cat){ %>
+            <option value="<%= cat.name.toLowerCase() %>"><%= cat.name %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label class="field">
+        <span>Sort / 排序</span>
+        <select id="catalogSort" class="catalog-sort-select">
+          <option value="">Default</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="name-asc">Name: A → Z</option>
+        </select>
+      </label>
       <label class="catalog-checkbox">
         <input type="checkbox" id="catalogInStock">
         <span>Show only in-stock items / 仅看有货</span>
@@ -64,14 +85,20 @@
     </div>
   </section>
 
-  <div class="empty-state" id="catalogFilterEmpty" hidden>No products match your current filters. / 当前筛选下暂无商品。</div>
+  <div class="empty-state" id="catalogFilterEmpty" hidden>
+    No products match your current filters. / 当前筛选下暂无商品。
+    <br><button type="button" class="btn btn-sm" id="catalogFilterEmptyClear" style="margin-top:10px;">Clear filters</button>
+  </div>
 <% } %>
 
 <% catalog.forEach(function(cat){ %>
   <section class="category-block" data-category-block data-category-name="<%= cat.name.toLowerCase() %>">
-    <h2 class="category-title">
+    <h2 class="category-title" data-category-toggle="<%= cat.name.toLowerCase() %>">
       <span><%= cat.name %></span>
-      <span class="muted" style="font-size: 11px; font-weight: normal; text-transform: uppercase; letter-spacing: 0.05em;"><%= cat.products.length %> Products</span>
+      <span style="display:flex;align-items:center;gap:12px;">
+        <span class="muted" style="font-size: 11px; font-weight: normal; text-transform: uppercase; letter-spacing: 0.05em;"><%= cat.products.length %> Products</span>
+        <svg class="category-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </span>
     </h2>
     <div class="table-wrap">
       <table class="product-table">
@@ -98,8 +125,10 @@
               </td>
               <td class="col-price"><%= money(p.price) %></td>
               <td class="col-stock">
-                <% if (p.stock > 0) { %>
+                <% if (p.stock > 5) { %>
                   <span class="stock-ok"><%= p.stock %></span>
+                <% } else if (p.stock > 0) { %>
+                  <span class="stock-low">⚠ <%= p.stock %></span>
                 <% } else { %>
                   <span class="stock-out">Sold out</span>
                 <% } %>
@@ -139,13 +168,14 @@
 
       <label class="field">
         <span>Telegram Username / 电报用户名</span>
-        <input type="text" name="telegram_username" id="m-telegram" required placeholder="@username" value="<%= user ? user.username : '' %>">
+        <input type="text" name="telegram_username" id="m-telegram" required placeholder="@username" value="<%= user ? user.username : '' %>" autocomplete="username">
         <small class="muted">Your order details and delivery will be linked to this username. / 订单和发货内容会绑定到这个电报用户名。</small>
+        <small id="m-tg-error" style="color:var(--red);display:none;"></small>
       </label>
 
       <div class="field-row">
         <label class="field">
-          <span>Quantity / 数量</span>
+          <span>Quantity / 数量 <span id="m-min-hint" class="muted" style="font-size:11px;"></span></span>
           <input type="number" name="quantity" id="m-qty" value="1" min="1" required>
         </label>
         <div class="field">
@@ -158,221 +188,184 @@
         </div>
       </div>
 
-      <!-- Payment method picker -->
+      <!-- Payment method picker with tabs -->
       <div class="pay-method-picker">
         <p class="pay-method-picker-label">Choose payment method / 选择支付方式</p>
 
-        <% if (swiftpayEnabled) { %>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_maya">
-            <img class="pay-method-logo" src="<%= getIcon('maya') %>" alt="Maya">
-            <span class="pay-method-info">
-              <strong>Maya</strong>
-              <small>Pay with Maya e-wallet / 用 Maya 钱包支付</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_gcash">
-            <img class="pay-method-logo" src="<%= getIcon('gcash') %>" alt="GCash">
-            <span class="pay-method-info">
-              <strong>GCash</strong>
-              <small>Pay with GCash e-wallet / 用 GCash 钱包支付</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_grabpay">
-            <img class="pay-method-logo" src="/static/img/payments/grabpay.svg" alt="GrabPay">
-            <span class="pay-method-info">
-              <strong>GrabPay</strong>
-              <small>Pay with GrabPay / 用 GrabPay 支付</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_shopeepay">
-            <img class="pay-method-logo" src="/static/img/payments/shopeepay.svg" alt="ShopeePay">
-            <span class="pay-method-info">
-              <strong>ShopeePay</strong>
-              <small>Pay with ShopeePay / 用 ShopeePay 支付</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_qrph">
-            <span class="pay-method-icon-wrap">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h.01M14 17h.01M17 14h.01M17 17h4v4h-4z"></path></svg>
-            </span>
-            <span class="pay-method-info">
-              <strong>QR Ph</strong>
-              <small>Scan QR code (InstaPay / PESONet) / 扫码支付</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_card">
-            <span class="pay-method-icon-wrap">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-            </span>
-            <span class="pay-method-info">
-              <strong>Card</strong>
-              <small>Visa / Mastercard credit or debit</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <%# Bank transfers via SwiftPay %>
+        <% var hasEwallets = swiftpayEnabled || magpieEnabled || (!swiftpayEnabled && mayaEnabled) || coinsEnabled || paymongoEnabled || xenditEnabled; %>
+        <% var hasBanks = swiftpayEnabled; %>
+        <% var hasManual = manualMethods.length > 0; %>
+        <% var tabCount = (hasEwallets ? 1 : 0) + (hasBanks ? 1 : 0) + (hasManual ? 1 : 0); %>
+
+        <% if (tabCount > 1) { %>
+        <div class="pay-tab-bar" id="payTabBar">
+          <% if (hasEwallets) { %><button type="button" class="pay-tab is-active" data-tab="ewallet">E-Wallets / 电子钱包</button><% } %>
+          <% if (hasBanks) { %><button type="button" class="pay-tab" data-tab="bank">Banks / 银行</button><% } %>
+          <% if (hasManual) { %><button type="button" class="pay-tab" data-tab="manual">Manual / 手动</button><% } %>
+        </div>
+        <% } %>
+
+        <% if (hasEwallets) { %>
+        <div class="pay-tab-panel <%= tabCount > 1 ? 'is-active' : '' %>" data-tab-panel="ewallet" style="<%= tabCount <= 1 ? 'display:flex;flex-direction:column;gap:8px;' : '' %>">
+          <% if (swiftpayEnabled) { %>
+            <button type="button" class="pay-method-btn" data-pay="swiftpay_maya">
+              <img class="pay-method-logo" src="<%= getIcon('maya') %>" alt="Maya">
+              <span class="pay-method-info"><strong>Maya</strong><small>Pay with Maya e-wallet / 用 Maya 钱包支付</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <button type="button" class="pay-method-btn" data-pay="swiftpay_gcash">
+              <img class="pay-method-logo" src="<%= getIcon('gcash') %>" alt="GCash">
+              <span class="pay-method-info"><strong>GCash</strong><small>Pay with GCash e-wallet / 用 GCash 钱包支付</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <button type="button" class="pay-method-btn" data-pay="swiftpay_grabpay">
+              <img class="pay-method-logo" src="/static/img/payments/grabpay.svg" alt="GrabPay">
+              <span class="pay-method-info"><strong>GrabPay</strong><small>Pay with GrabPay / 用 GrabPay 支付</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <button type="button" class="pay-method-btn" data-pay="swiftpay_shopeepay">
+              <img class="pay-method-logo" src="/static/img/payments/shopeepay.svg" alt="ShopeePay">
+              <span class="pay-method-info"><strong>ShopeePay</strong><small>Pay with ShopeePay / 用 ShopeePay 支付</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <button type="button" class="pay-method-btn" data-pay="swiftpay_qrph">
+              <span class="pay-method-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h.01M14 17h.01M17 14h.01M17 17h4v4h-4z"></path></svg></span>
+              <span class="pay-method-info"><strong>QR Ph</strong><small>Scan QR code (InstaPay / PESONet) / 扫码支付</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <button type="button" class="pay-method-btn" data-pay="swiftpay_card">
+              <span class="pay-method-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg></span>
+              <span class="pay-method-info"><strong>Card</strong><small>Visa / Mastercard credit or debit</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          <% } %>
+          <% if (magpieEnabled) { %>
+            <button type="button" class="pay-method-btn" data-pay="magpie_alipay">
+              <img class="pay-method-logo" src="<%= getIcon('alipay') %>" alt="Alipay">
+              <span class="pay-method-info"><strong>Alipay 支付宝</strong><small>Auto-converted to CNY / 自动换算人民币</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <button type="button" class="pay-method-btn" data-pay="magpie_wechat">
+              <img class="pay-method-logo" src="<%= getIcon('wechat') %>" alt="WeChat Pay">
+              <span class="pay-method-info"><strong>WeChat Pay 微信支付</strong><small>Auto-converted to CNY / 自动换算人民币</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          <% } %>
+          <% if (!swiftpayEnabled && mayaEnabled) { %>
+            <button type="button" class="pay-method-btn" data-pay="maya">
+              <img class="pay-method-logo" src="<%= getIcon('maya') %>" alt="Maya">
+              <span class="pay-method-info"><strong>Maya Checkout</strong><small>Pay with Maya, GCash, or Card</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          <% } %>
+          <% if (coinsEnabled) { %>
+            <button type="button" class="pay-method-btn" data-pay="coins">
+              <img class="pay-method-logo" src="<%= getIcon('coins.ph') %>" alt="Coins.ph">
+              <span class="pay-method-info"><strong>Coins.ph</strong><small>Instant Crypto/Wallet payment</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          <% } %>
+          <% if (paymongoEnabled) { %>
+            <button type="button" class="pay-method-btn" data-pay="paymongo">
+              <img class="pay-method-logo" src="<%= getIcon('paymongo') %>" alt="PayMongo">
+              <span class="pay-method-info"><strong>PayMongo</strong><small>GCash, Maya, Cards, BillEase</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          <% } %>
+          <% if (xenditEnabled) { %>
+            <button type="button" class="pay-method-btn" data-pay="xendit">
+              <img class="pay-method-logo" src="<%= getIcon('xendit') %>" alt="Xendit">
+              <span class="pay-method-info"><strong>Xendit</strong><small>PH/ID Local Payments</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          <% } %>
+        </div>
+        <% } %>
+
+        <% if (hasBanks) { %>
+        <div class="pay-tab-panel" data-tab-panel="bank">
           <button type="button" class="pay-method-btn" data-pay="swiftpay_bdo">
             <img class="pay-method-logo" src="/static/img/payments/bdo.svg" alt="BDO">
-            <span class="pay-method-info">
-              <strong>BDO</strong>
-              <small>Banco de Oro online banking</small>
-            </span>
+            <span class="pay-method-info"><strong>BDO</strong><small>Banco de Oro online banking</small></span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_bpi">
             <img class="pay-method-logo" src="/static/img/payments/bpi.svg" alt="BPI">
-            <span class="pay-method-info">
-              <strong>BPI</strong>
-              <small>Bank of the Philippine Islands online banking</small>
-            </span>
+            <span class="pay-method-info"><strong>BPI</strong><small>Bank of the Philippine Islands online banking</small></span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_unionbank">
             <img class="pay-method-logo" src="/static/img/payments/unionbank.svg" alt="UnionBank">
-            <span class="pay-method-info">
-              <strong>UnionBank</strong>
-              <small>UnionBank online banking</small>
-            </span>
+            <span class="pay-method-info"><strong>UnionBank</strong><small>UnionBank online banking</small></span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_metrobank">
             <img class="pay-method-logo" src="/static/img/payments/metrobank.svg" alt="Metrobank">
-            <span class="pay-method-info">
-              <strong>Metrobank</strong>
-              <small>Metrobank online banking</small>
-            </span>
+            <span class="pay-method-info"><strong>Metrobank</strong><small>Metrobank online banking</small></span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_rcbc">
             <img class="pay-method-logo" src="/static/img/payments/rcbc.svg" alt="RCBC">
-            <span class="pay-method-info">
-              <strong>RCBC</strong>
-              <small>RCBC online banking</small>
-            </span>
+            <span class="pay-method-info"><strong>RCBC</strong><small>RCBC online banking</small></span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_landbank">
             <img class="pay-method-logo" src="/static/img/payments/landbank.svg" alt="Landbank">
-            <span class="pay-method-info">
-              <strong>Landbank</strong>
-              <small>Landbank online banking</small>
-            </span>
+            <span class="pay-method-info"><strong>Landbank</strong><small>Landbank online banking</small></span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_pnb">
             <img class="pay-method-logo" src="/static/img/payments/pnb.svg" alt="PNB">
-            <span class="pay-method-info">
-              <strong>PNB</strong>
-              <small>Philippine National Bank online banking</small>
-            </span>
+            <span class="pay-method-info"><strong>PNB</strong><small>Philippine National Bank online banking</small></span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_securitybank">
             <img class="pay-method-logo" src="/static/img/payments/securitybank.svg" alt="Security Bank">
-            <span class="pay-method-info">
-              <strong>Security Bank</strong>
-              <small>Security Bank online banking</small>
-            </span>
+            <span class="pay-method-info"><strong>Security Bank</strong><small>Security Bank online banking</small></span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_chinabank">
             <img class="pay-method-logo" src="/static/img/payments/chinabank.svg" alt="China Bank">
-            <span class="pay-method-info">
-              <strong>China Bank</strong>
-              <small>China Banking Corporation online banking</small>
-            </span>
+            <span class="pay-method-info"><strong>China Bank</strong><small>China Banking Corporation online banking</small></span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
+        </div>
         <% } %>
 
-        <% if (magpieEnabled) { %>
-          <button type="button" class="pay-method-btn" data-pay="magpie_alipay">
-            <img class="pay-method-logo" src="<%= getIcon('alipay') %>" alt="Alipay">
-            <span class="pay-method-info">
-              <strong>Alipay 支付宝</strong>
-              <small>Auto-converted to CNY / 自动换算人民币</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <button type="button" class="pay-method-btn" data-pay="magpie_wechat">
-            <img class="pay-method-logo" src="<%= getIcon('wechat') %>" alt="WeChat Pay">
-            <span class="pay-method-info">
-              <strong>WeChat Pay 微信支付</strong>
-              <small>Auto-converted to CNY / 自动换算人民币</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
+        <% if (hasManual) { %>
+        <div class="pay-tab-panel" data-tab-panel="manual">
+          <% manualMethods.forEach(function(m){ %>
+            <button type="button" class="pay-method-btn" data-pay="manual" data-manual="<%= m.id %>">
+              <% var icon = getIcon(m.name, m.icon_url); %>
+              <% if (icon) { %>
+                <img class="pay-method-logo" src="<%= icon %>" alt="<%= m.name %>">
+              <% } else { %>
+                <span class="pay-method-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg></span>
+              <% } %>
+              <span class="pay-method-info"><strong><%= m.name %></strong><small>Manual transfer / 手动转账</small></span>
+              <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          <% }) %>
+        </div>
         <% } %>
-
-        <%# Legacy gateway options (only shown if SwiftPay is not configured) %>
-        <% if (!swiftpayEnabled && mayaEnabled) { %>
-          <button type="button" class="pay-method-btn" data-pay="maya">
-            <img class="pay-method-logo" src="<%= getIcon('maya') %>" alt="Maya">
-            <span class="pay-method-info">
-              <strong>Maya Checkout</strong>
-              <small>Pay with Maya, GCash, or Card</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-        <% } %>
-        <% if (coinsEnabled) { %>
-          <button type="button" class="pay-method-btn" data-pay="coins">
-            <img class="pay-method-logo" src="<%= getIcon('coins.ph') %>" alt="Coins.ph">
-            <span class="pay-method-info">
-              <strong>Coins.ph</strong>
-              <small>Instant Crypto/Wallet payment</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-        <% } %>
-        <% if (paymongoEnabled) { %>
-          <button type="button" class="pay-method-btn" data-pay="paymongo">
-            <img class="pay-method-logo" src="<%= getIcon('paymongo') %>" alt="PayMongo">
-            <span class="pay-method-info">
-              <strong>PayMongo</strong>
-              <small>GCash, Maya, Cards, BillEase</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-        <% } %>
-        <% if (xenditEnabled) { %>
-          <button type="button" class="pay-method-btn" data-pay="xendit">
-            <img class="pay-method-logo" src="<%= getIcon('xendit') %>" alt="Xendit">
-            <span class="pay-method-info">
-              <strong>Xendit</strong>
-              <small>PH/ID Local Payments</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-        <% } %>
-
-        <% manualMethods.forEach(function(m){ %>
-          <button type="button" class="pay-method-btn" data-pay="manual" data-manual="<%= m.id %>">
-            <% var icon = getIcon(m.name, m.icon_url); %>
-            <% if (icon) { %>
-              <img class="pay-method-logo" src="<%= icon %>" alt="<%= m.name %>">
-            <% } else { %>
-              <span class="pay-method-icon-wrap">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-              </span>
-            <% } %>
-            <span class="pay-method-info">
-              <strong><%= m.name %></strong>
-              <small>Manual transfer / 手动转账</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-        <% }) %>
 
         <% if (!swiftpayEnabled && !magpieEnabled && !mayaEnabled && !coinsEnabled && !paymongoEnabled && !xenditEnabled && !manualMethods.length) { %>
           <p class="muted" style="text-align:center; padding: 16px 0;">No payment methods are configured yet.</p>
         <% } %>
       </div>
+
+      <!-- Order summary confirm card (shown after selecting payment method) -->
+      <div class="order-summary-confirm" id="orderSummaryConfirm" style="display:none;">
+        <div class="osc-row"><span class="osc-label">Product</span><span class="osc-value" id="osc-product">—</span></div>
+        <div class="osc-row"><span class="osc-label">Quantity</span><span class="osc-value" id="osc-qty">—</span></div>
+        <div class="osc-row"><span class="osc-label">Payment</span><span class="osc-value" id="osc-method">—</span></div>
+        <hr style="margin:8px 0; border-color:var(--border);">
+        <div class="osc-row"><span class="osc-label">Total</span><span class="osc-value osc-total" id="osc-total">—</span></div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="confirmOrderBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        Confirm &amp; Pay / 确认付款
+      </button>
 
       <% if (settings.cf_turnstile_site_key) { %>
         <div class="field" style="margin-top: 15px; display: flex; justify-content: center;">
@@ -384,3 +377,4 @@
 </div>
 
 <%- include('partials/foot') %>
+
