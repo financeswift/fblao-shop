@@ -8,6 +8,21 @@ const HOSTS = {
   live: 'https://api.swiftpay.ph',
 };
 
+function credentials() {
+  return {
+    apiKey:
+      getSetting('swiftpay_api_key') ||
+      process.env.SWIFTPAY_API_KEY ||
+      process.env.SWIFTPAY_ACCESS_KEY ||
+      '',
+    apiSecret:
+      getSetting('swiftpay_api_secret') ||
+      process.env.SWIFTPAY_API_SECRET ||
+      process.env.SWIFTPAY_SECRET_KEY ||
+      '',
+  };
+}
+
 function apiBase() {
   const custom = (getSetting('swiftpay_api_base_url') || process.env.SWIFTPAY_API_BASE_URL || '').trim();
   if (custom) return custom.replace(/\/$/, '');
@@ -17,13 +32,12 @@ function apiBase() {
 
 function isConfigured() {
   const enabled = getSetting('swiftpay_enabled') === '1' || process.env.SWIFTPAY_ENABLED === '1';
-  const apiKey = getSetting('swiftpay_api_key') || process.env.SWIFTPAY_API_KEY;
+  const { apiKey } = credentials();
   return enabled && !!apiKey;
 }
 
 function authHeaders() {
-  const apiKey = getSetting('swiftpay_api_key') || process.env.SWIFTPAY_API_KEY;
-  const apiSecret = getSetting('swiftpay_api_secret') || process.env.SWIFTPAY_API_SECRET;
+  const { apiKey, apiSecret } = credentials();
   if (!apiKey) throw new Error('Swiftpay API key is not configured');
 
   const headers = {

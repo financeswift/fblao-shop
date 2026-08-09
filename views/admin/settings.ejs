@@ -173,8 +173,8 @@
         </label>
       </div>
       <label class="field"><span>API Base URL (optional)</span><input type="text" name="swiftpay_api_base_url" value="<%= escapeHtml(s.swiftpay_api_base_url) %>" placeholder="https://api.swiftpay.ph"></label>
-      <label class="field"><span>API Key</span><input type="text" name="swiftpay_api_key" value="<%= escapeHtml(s.swiftpay_api_key) %>"></label>
-      <label class="field"><span>API Secret (optional header)</span><input type="text" name="swiftpay_api_secret" value="<%= escapeHtml(s.swiftpay_api_secret) %>"></label>
+      <label class="field"><span>API Key / Access Key</span><input type="text" name="swiftpay_api_key" value="<%= escapeHtml(s.swiftpay_api_key) %>"></label>
+      <label class="field"><span>API Secret (optional header, or Secret Key alias)</span><input type="text" name="swiftpay_api_secret" value="<%= escapeHtml(s.swiftpay_api_secret) %>"></label>
       <label class="field"><span>Webhook Secret (optional HMAC)</span><input type="text" name="swiftpay_webhook_secret" value="<%= escapeHtml(s.swiftpay_webhook_secret) %>"></label>
       <button class="btn btn-primary" type="submit">Save Swiftpay PH configuration</button>
     </form>
@@ -189,8 +189,8 @@
     <form method="POST" action="/admin/settings/magpie">
       <label class="field" style="flex:0 0 130px;"><span>Enabled</span><input type="checkbox" name="magpie_enabled" <%= s.magpie_enabled === '1' ? 'checked' : '' %>></label>
       <label class="field"><span>API Base URL (optional)</span><input type="text" name="magpie_api_base_url" value="<%= escapeHtml(s.magpie_api_base_url) %>" placeholder="https://api.magpie.example"></label>
-      <label class="field"><span>API Key</span><input type="text" name="magpie_api_key" value="<%= escapeHtml(s.magpie_api_key) %>"></label>
-      <label class="field"><span>API Secret (optional)</span><input type="text" name="magpie_api_secret" value="<%= escapeHtml(s.magpie_api_secret) %>"></label>
+      <label class="field"><span>API Key (or Secret Key)</span><input type="text" name="magpie_api_key" value="<%= escapeHtml(s.magpie_api_key) %>"></label>
+      <label class="field"><span>API Secret (optional, can store Publishable Key)</span><input type="text" name="magpie_api_secret" value="<%= escapeHtml(s.magpie_api_secret) %>"></label>
       <label class="field"><span>Webhook Secret (optional)</span><input type="text" name="magpie_webhook_secret" value="<%= escapeHtml(s.magpie_webhook_secret) %>"></label>
       <label class="field"><span>Target Currency</span><input type="text" name="magpie_target_currency" value="<%= escapeHtml(s.magpie_target_currency) %>" placeholder="CNY"></label>
       <button class="btn btn-primary" type="submit">Save Magpie configuration</button>

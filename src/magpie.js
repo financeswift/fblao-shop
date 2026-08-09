@@ -3,19 +3,45 @@
 const crypto = require('crypto');
 const { getSetting } = require('./db');
 
+const HOSTS = {
+  sandbox: 'https://api.sandbox.magpie.im',
+  live: 'https://api.magpie.im',
+};
+
+function credentials() {
+  return {
+    apiKey:
+      getSetting('magpie_api_key') ||
+      process.env.MAGPIE_API_KEY ||
+      process.env.MAGPIE_SECRET_KEY ||
+      '',
+    apiSecret:
+      getSetting('magpie_api_secret') ||
+      process.env.MAGPIE_API_SECRET ||
+      process.env.MAGPIE_PUBLISHABLE_KEY ||
+      '',
+  };
+}
+
 function isConfigured() {
   const enabled = getSetting('magpie_enabled') === '1' || process.env.MAGPIE_ENABLED === '1';
-  const apiKey = getSetting('magpie_api_key') || process.env.MAGPIE_API_KEY;
+  const { apiKey } = credentials();
   return enabled && !!apiKey;
 }
 
 function apiBase() {
-  return (getSetting('magpie_api_base_url') || process.env.MAGPIE_API_BASE_URL || '').trim().replace(/\/$/, '');
+  const custom = (getSetting('magpie_api_base_url') || process.env.MAGPIE_API_BASE_URL || '').trim();
+  if (custom) return custom.replace(/\/$/, '');
+
+  const { apiKey, apiSecret } = credentials();
+  const key = String(apiKey || apiSecret).trim();
+  const isLive = /^((sk|pk)_live_)/i.test(key);
+  return isLive ? HOSTS.live : HOSTS.sandbox;
 }
 
 function authHeaders() {
-  const apiKey = getSetting('magpie_api_key') || process.env.MAGPIE_API_KEY;
-  const apiSecret = getSetting('magpie_api_secret') || process.env.MAGPIE_API_SECRET;
+  const { apiKey, apiSecret } = credentials();
+  if (!apiKey) throw new Error('Magpie API key is not configured');
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${apiKey}`,
@@ -44,7 +70,7 @@ async function convertAmount(amount, fromCurrency, toCurrency) {
 }
 
 async function createCheckout(order, baseUrl, method = 'alipay') {
-  const apiKey = getSetting('magpie_api_key') || process.env.MAGPIE_API_KEY;
+  const { apiKey } = credentials();
   if (!apiKey) throw new Error('Magpie API key is not configured');
 
   const targetCurrency = (getSetting('magpie_target_currency') || process.env.MAGPIE_TARGET_CURRENCY || 'CNY').toUpperCase();
@@ -72,7 +98,7 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
     },
   };
 
-  const endpoint = apiBase() ? `${apiBase()}/v1/payments/checkout` : '/v1/payments/checkout';
+  const endpoint = `${apiBase()}/v1/payments/checkout`;
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: authHeaders(),

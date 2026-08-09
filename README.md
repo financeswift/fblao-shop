@@ -75,6 +75,15 @@ Now your `shop.db` will be stored in the persistent volume and survive redeploym
 | `COINS_MODE` | `sandbox` or `live` for Coins.ph integration |
 | `COINS_API_KEY` / `COINS_API_SECRET` | Coins.ph API credentials |
 | `COINS_WEBHOOK_SECRET` | Optional webhook secret for Coins.ph |
+| `SWIFTPAY_ENABLED` / `SWIFTPAY_MODE` | Enable Swiftpay and choose `sandbox` or `live` |
+| `SWIFTPAY_API_KEY` / `SWIFTPAY_API_SECRET` | Swiftpay credentials (also accepts `SWIFTPAY_ACCESS_KEY` / `SWIFTPAY_SECRET_KEY`) |
+| `SWIFTPAY_API_BASE_URL` | Optional override for Swiftpay API host |
+| `SWIFTPAY_WEBHOOK_SECRET` | Optional webhook HMAC secret for Swiftpay |
+| `MAGPIE_ENABLED` | `1` to enable Magpie checkout |
+| `MAGPIE_API_KEY` / `MAGPIE_API_SECRET` | Magpie credentials (also accepts `MAGPIE_SECRET_KEY` / `MAGPIE_PUBLISHABLE_KEY`) |
+| `MAGPIE_API_BASE_URL` | Optional override for Magpie API host (defaults by key type) |
+| `MAGPIE_TARGET_CURRENCY` | Target settlement currency for Magpie checkout (default `CNY`) |
+| `MAGPIE_WEBHOOK_SECRET` | Optional webhook HMAC secret for Magpie |
 
 `.env` only seeds the database on **first run**. After that, change everything in **Admin → Settings**.
 
