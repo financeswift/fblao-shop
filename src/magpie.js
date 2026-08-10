@@ -4,7 +4,9 @@ const crypto = require('crypto');
 const { getSetting, setSetting } = require('./db');
 
 const HOSTS = {
-  sandbox: 'https://api-sandbox.magpie.im',
+  // Magpie currently exposes a unified API endpoint. Sandbox and live both use the same host,
+  // with mode selection handled by API credentials rather than a separate sandbox host.
+  sandbox: 'https://api.magpie.im',
   live: 'https://api.magpie.im',
 };
 
@@ -13,11 +15,27 @@ function settingOrEnv(settingKey, envKey, fallback = '') {
   return String(value || '').trim();
 }
 
+const API_VERSION = 'v2';
+
 function apiBase() {
   const custom = settingOrEnv('magpie_api_base_url', 'MAGPIE_API_BASE_URL');
-  if (custom) return custom.replace(/\/$/, '');
+  if (custom) return custom.replace(/\/+$|\s+$/g, '');
   const mode = settingOrEnv('magpie_mode', 'MAGPIE_MODE', 'sandbox').toLowerCase();
   return HOSTS[mode] || HOSTS.sandbox;
+}
+
+function apiHasVersion(baseUrl) {
+  return /\/v\d+(?:\.\d+)?(?:\/|$)/i.test(String(baseUrl));
+}
+
+function apiUrl(path) {
+  const base = apiBase().replace(/\/+$/, '');
+  const cleanedPath = String(path || '').replace(/^\/+/, '');
+  if (!cleanedPath) return base;
+  if (apiHasVersion(base)) {
+    return `${base}/${cleanedPath}`;
+  }
+  return `${base}/${API_VERSION}/${cleanedPath}`;
 }
 
 function isConfigured() {
@@ -25,6 +43,77 @@ function isConfigured() {
   const publicKey = settingOrEnv('magpie_api_key', 'MAGPIE_API_KEY');
   const secretKey = settingOrEnv('magpie_api_secret', 'MAGPIE_API_SECRET');
   return enabled && !!publicKey && !!secretKey;
+}
+
+function parseJsonBody(text) {
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch (_) {
+    return null;
+  }
+}
+
+function findNestedValue(value, keys, visited = new Set()) {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== 'object') return null;
+  if (visited.has(value)) return null;
+  visited.add(value);
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = findNestedValue(item, keys, visited);
+      if (found !== null && found !== undefined && found !== '') return found;
+    }
+    return null;
+  }
+
+  for (const key of keys) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      const out = value[key];
+      if (out !== null && out !== undefined && out !== '') return out;
+    }
+  }
+
+  for (const [key, child] of Object.entries(value)) {
+    if (key === 'headers') continue;
+    const found = findNestedValue(child, keys, visited);
+    if (found !== null && found !== undefined && found !== '') return found;
+  }
+
+  return null;
+}
+
+function extractIdentifier(payload) {
+  return findNestedValue(payload, ['id', 'charge_id', 'source_id', 'payment_id', 'checkout_id']);
+}
+
+function extractCheckoutUrl(payload) {
+  return findNestedValue(payload, [
+    'checkout_url',
+    'checkoutUrl',
+    'payment_url',
+    'paymentUrl',
+    'redirect_url',
+    'redirectUrl',
+    'hosted_url',
+    'hostedUrl',
+    'url',
+  ]);
+}
+
+function getSourceTypeCandidates(method = 'alipay') {
+  const normalized = String(method || '').trim().toLowerCase();
+  if (normalized === 'wechat' || normalized === 'wechatpay' || normalized === 'wechat_pay' || normalized === 'wechat-pay') {
+    return ['wechatpay', 'wechat', 'wechat_pay', 'wechat-pay'];
+  }
+  if (normalized === 'alipay' || normalized === 'alipay_pay' || normalized === 'alipay-pay') {
+    return ['alipay', 'alipay_pay', 'alipay-pay'];
+  }
+  if (normalized.startsWith('magpie_')) {
+    return getSourceTypeCandidates(normalized.replace(/^magpie_/, ''));
+  }
+  return ['alipay'];
 }
 
 /**
@@ -115,7 +204,7 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
   if (!secretKey) throw new Error('Magpie secret key is not configured');
 
   const base = apiBase();
-  const sourceType = method === 'wechat' ? 'wechat' : 'alipay';
+  const sourceTypes = getSourceTypeCandidates(method);
 
   // Determine target currency from config (default CNY) and source/store currency
   const targetCurrency = (settingOrEnv('magpie_target_currency', 'MAGPIE_TARGET_CURRENCY', 'CNY') || 'CNY').toUpperCase();
@@ -148,36 +237,56 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
   const successUrl = `${baseUrl}/order/result?ref=${encodeURIComponent(order.order_number)}&status=success`;
   const failUrl = `${baseUrl}/order/result?ref=${encodeURIComponent(order.order_number)}&status=cancel`;
 
-  const sourcePayload = {
-    type: sourceType,
-    currency: usedCurrency.toLowerCase(),
-    amount: amountSmallestUnit,
-    redirect: {
-      success: successUrl,
-      fail: failUrl,
-    },
-  };
+  let lastError = null;
+  let sourceData = null;
+  let sourceId = null;
 
-  const sourceRes = await fetch(`${base}/v1.1/sources`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${publicKey}`,
-    },
-    body: JSON.stringify(sourcePayload),
-  });
+  for (const sourceType of sourceTypes) {
+    const sourcePayload = {
+      type: sourceType,
+      currency: usedCurrency.toLowerCase(),
+      amount: amountSmallestUnit,
+      redirect: {
+        success: successUrl,
+        fail: failUrl,
+      },
+    };
 
-  const sourceText = await sourceRes.text();
-  let sourceData = {};
-  try { sourceData = JSON.parse(sourceText); } catch (_) { /* keep raw */ }
+    const sourceRes = await fetch(apiUrl(`sources`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${publicKey}`,
+      },
+      body: JSON.stringify(sourcePayload),
+    });
 
-  if (!sourceRes.ok) {
-    const msg = sourceData.message || sourceData.error || sourceText || 'Magpie API error';
-    throw new Error(`Magpie source creation failed (${sourceRes.status}): ${msg}`);
+    const sourceText = await sourceRes.text();
+    sourceData = parseJsonBody(sourceText) || {};
+
+    if (sourceRes.ok) {
+      sourceId = extractIdentifier(sourceData) || sourceData?.id || sourceData?.source?.id || null;
+      break;
+    }
+
+    lastError = new Error(`Magpie source creation failed (${sourceRes.status}): ${sourceData.message || sourceData.error || sourceText || 'Magpie API error'}`);
   }
 
-  const sourceId = sourceData.id;
-  if (!sourceId) throw new Error('Magpie source response missing id');
+  if (!sourceId && !sourceData) {
+    throw lastError || new Error('Magpie source creation failed');
+  }
+
+  let checkoutUrl = extractCheckoutUrl(sourceData);
+  if (checkoutUrl) {
+    return {
+      checkoutId: extractIdentifier(sourceData) || sourceData?.id || null,
+      checkoutUrl,
+    };
+  }
+
+  if (!sourceId) {
+    throw lastError || new Error('Magpie source response missing id');
+  }
 
   const chargePayload = {
     amount: amountSmallestUnit,
@@ -187,7 +296,7 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
     referenceNumber: String(order.order_number),
   };
 
-  const chargeRes = await fetch(`${base}/v1.1/charges`, {
+  const chargeRes = await fetch(apiUrl(`charges`), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -197,22 +306,24 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
   });
 
   const chargeText = await chargeRes.text();
-  let chargeData = {};
-  try { chargeData = JSON.parse(chargeText); } catch (_) { /* keep raw */ }
+  const chargeData = parseJsonBody(chargeText) || {};
 
   if (!chargeRes.ok) {
     const msg = chargeData.message || chargeData.error || chargeText || 'Magpie API error';
     throw new Error(`Magpie charge creation failed (${chargeRes.status}): ${msg}`);
   }
 
-  const chargeId = chargeData.id;
+  const chargeId = extractIdentifier(chargeData) || chargeData?.id || sourceId;
   if (!chargeId) throw new Error('Magpie charge response missing id');
 
-  const checkoutUrl =
-    chargeData?.source?.redirect?.checkout_url ||
-    chargeData?.redirect?.checkout_url ||
-    sourceData?.redirect?.checkout_url ||
-    null;
+  checkoutUrl = extractCheckoutUrl(chargeData) || extractCheckoutUrl(sourceData) || null;
+  if (!checkoutUrl) {
+    checkoutUrl = chargeData?.source?.redirect?.checkout_url ||
+      chargeData?.redirect?.checkout_url ||
+      sourceData?.redirect?.checkout_url ||
+      sourceData?.source?.redirect?.checkout_url ||
+      null;
+  }
 
   if (!checkoutUrl) throw new Error('Magpie response missing checkout URL');
 
@@ -258,4 +369,7 @@ module.exports = {
   createCheckout,
   normalizeStatus,
   verifyWebhookSignature,
+  getSourceTypeCandidates,
+  extractCheckoutUrl,
+  extractIdentifier,
 };
