@@ -38,8 +38,12 @@ function isConfigured() {
  *             Body: { amount, currency, source, description, referenceNumber }
  *             Response: { id, status, source: { redirect: { checkout_url } } }
  *
- * Amount is in centavos (integer, PHP × 100).
- * Currency is always 'php' — Magpie handles conversion to CNY internally.
+ * The app now supports a configurable target currency (magpie_target_currency).
+ * If the target currency differs from the store currency, the amount is converted
+ * using a public exchange API before creating the checkout. On conversion failures
+ * we fall back to the legacy behavior (PHP).
+ *
+ * Amounts are sent in the smallest unit of the target currency (e.g. cents).
  *
  * @param {object} order
  * @param {string} baseUrl
@@ -55,8 +59,43 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
   const base = apiBase();
   const sourceType = method === 'wechat' ? 'wechat' : 'alipay';
 
-  // Magpie amount is in centavos (smallest currency unit).
-  const amountCentavos = Math.round(Number(order.total) * 100);
+  // Determine target currency from config (default CNY) and source/store currency
+  const targetCurrency = (settingOrEnv('magpie_target_currency', 'MAGPIE_TARGET_CURRENCY', 'CNY') || 'CNY').toUpperCase();
+  const storeCurrency = (order.currency || 'PHP').toUpperCase();
+
+  // Amount (numeric) as shown in the store
+  const storeAmount = Number(order.total);
+  if (Number.isNaN(storeAmount)) throw new Error('Invalid order total');
+
+  // Convert amount to target currency if needed.
+  // We use exchangerate.host's public convert endpoint as a simple fallback.
+  // If conversion fails, we'll fallback to sending PHP (legacy behaviour).
+  let amountInTarget = storeAmount;
+  let usedCurrency = storeCurrency;
+
+  if (targetCurrency !== storeCurrency) {
+    try {
+      const convUrl = `https://api.exchangerate.host/convert?from=${encodeURIComponent(storeCurrency)}&to=${encodeURIComponent(targetCurrency)}&amount=${encodeURIComponent(storeAmount)}`;
+      const convRes = await fetch(convUrl, { method: 'GET' });
+      if (convRes.ok) {
+        const convData = await convRes.json().catch(() => null);
+        if (convData && typeof convData.result === 'number') {
+          amountInTarget = Number(convData.result);
+          usedCurrency = targetCurrency;
+        } else {
+          console.warn('[Magpie] exchange conversion returned unexpected data, falling back to store currency');
+        }
+      } else {
+        console.warn('[Magpie] exchange conversion failed with status', convRes.status, 'falling back to store currency');
+      }
+    } catch (e) {
+      console.warn('[Magpie] exchange conversion error, falling back to store currency:', e && e.message);
+    }
+  }
+
+  // Magpie amount is in the smallest currency unit (assume 2 decimal places).
+  // For most target currencies (CNY, PHP, USD) this is cents; adjust if you need JPY, etc.
+  const amountSmallestUnit = Math.round(Number(amountInTarget) * 100);
 
   const successUrl = `${baseUrl}/order/result?ref=${encodeURIComponent(order.order_number)}&status=success`;
   const failUrl = `${baseUrl}/order/result?ref=${encodeURIComponent(order.order_number)}&status=cancel`;
@@ -64,8 +103,8 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
   // ── Step 1: Create source ────────────────────────────────────────────────
   const sourcePayload = {
     type: sourceType,
-    currency: 'php',
-    amount: amountCentavos,
+    currency: usedCurrency.toLowerCase(),
+    amount: amountSmallestUnit,
     redirect: {
       success: successUrl,
       fail: failUrl,
@@ -95,8 +134,8 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
 
   // ── Step 2: Create charge ─────────────────────────────────────────────────
   const chargePayload = {
-    amount: amountCentavos,
-    currency: 'php',
+    amount: amountSmallestUnit,
+    currency: usedCurrency.toLowerCase(),
     source: sourceId,
     description: `Order ${order.order_number} - ${order.product_name}`,
     referenceNumber: String(order.order_number),
