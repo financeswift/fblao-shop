@@ -257,10 +257,6 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
     try {
       const { checkoutId, checkoutUrl } = await swiftpay.createCheckout(order, res.locals.baseUrl, institutionCode);
       db.prepare('UPDATE orders SET swiftpay_checkout_id = ?, swiftpay_checkout_url = ? WHERE id = ?').run(checkoutId, checkoutUrl, order.id);
-      // If SwiftPay already knows the selected institution, send the customer directly to the provider.
-      if (institutionCode) {
-        return res.redirect(checkoutUrl);
-      }
       return res.redirect(`/swiftpay/checkout?ref=${encodeURIComponent(orderNumber)}`);
     } catch (e) {
       db.prepare("UPDATE orders SET status = 'failed', admin_notes = ? WHERE id = ?").run(
