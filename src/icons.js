@@ -5,7 +5,8 @@
  */
 const ICONS = {
   // E-Wallets & Digital Payments
-  gcash: '/static/img/payments/gcash.svg',
+  gcash: '/logos-upload/gcash@selection.png',
+  gcash_payment_page: '/logos-upload/gcash@paymentpage.png',
   maya: '/static/img/payments/maya.png',
   paymaya: '/static/img/payments/maya.png',
   grabpay: '/static/img/payments/grabpay.svg',
@@ -69,7 +70,7 @@ const ICONS = {
   bitcoin: '/static/img/payments/coins.svg',
   ethereum: '/static/img/payments/coins.svg',
   telegram: '/static/img/payments/coins.svg',
-  gcash_pro: '/static/img/payments/gcash.svg',
+  gcash_pro: '/logos-upload/gcash@selection.png',
   maya_pro: '/static/img/payments/maya.svg'
 };
 
