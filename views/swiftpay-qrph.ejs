@@ -4,7 +4,6 @@
   <div class="gcash-qr-header">
     <div class="gcash-qr-logo-wrap">
       <img class="gcash-qr-logo" src="<%= getIcon('gcash') %>" alt="GCash">
-      <span class="gcash-qr-wordmark">GCash</span>
     </div>
   </div>
 
@@ -50,14 +49,8 @@
           <p class="gcash-qr-amount">Pay <strong><%= money(order.total) %></strong> via GCash</p>
 
           <div class="gcash-qr-actions">
-            <a class="gcash-web-btn" href="https://www.gcash.com/pay" target="_blank" rel="noopener noreferrer">GCash Web Pay</a>
             <a class="gcash-status-btn" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">Check status</a>
           </div>
-
-          <details class="gcash-qr-details">
-            <summary>Show raw QR string</summary>
-            <code><%= qrCode %></code>
-          </details>
         </div>
       <% } else { %>
         <div class="alert alert-error">QR code is unavailable. Please contact support with your order number.</div>

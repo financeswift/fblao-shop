@@ -641,20 +641,13 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   padding-top: 20px;
 }
 .gcash-qr-logo {
-  width: 45px;
+  width: 60px;
   height: auto;
   display: block;
   border-radius: 0;
   background: transparent;
   border: 0;
   object-fit: contain;
-}
-.gcash-qr-wordmark {
-  color: #fff;
-  font-size: 36px;
-  font-weight: 500;
-  letter-spacing: -0.5px;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 .gcash-qr-content {
   max-width: 500px;
@@ -755,7 +748,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 }
 .gcash-qr-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 .gcash-web-btn,
@@ -768,25 +761,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 }
 .gcash-status-btn { background: #eef2ff; border-color: #dfe7ff; color: #1d4ed8; }
 .gcash-qr-details {
-  margin-top: 16px;
-  text-align: left;
-  color: #374151;
-}
-.gcash-qr-details summary {
-  cursor: pointer;
-  font-weight: 600;
-  color: #475569;
-}
-.gcash-qr-details code {
-  display: block;
-  margin-top: 8px;
-  background: #f8fafc;
-  border: 1px solid #dfe4ea;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 11px;
-  word-break: break-all;
-  color: #1f2937;
+  display: none;
 }
 
 /* Footer */
