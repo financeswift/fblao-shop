@@ -808,6 +808,21 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   border: 1px solid var(--border);
   border-radius: var(--pill-radius);
   padding: 5px 10px;
+}
+.footer-partners { display: flex; justify-content: center; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.footer-partner-icon {
+  display: block;
+  width: auto;
+  height: 28px;
+  max-width: 110px;
+  object-fit: contain;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  opacity: 0.85;
+}
+.footer-partner-icon:hover {
+  transform: scale(1.05);
+  opacity: 1;
+}
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.07);
 }
 .payment-methods .payment-icon-mastercard { max-width: 140px; }
