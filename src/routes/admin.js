@@ -671,6 +671,18 @@ router.post('/settings/magpie', (req, res) => {
   res.redirect('/admin/settings');
 });
 
+// Test Magpie API connectivity
+router.post('/test/magpie', asyncHandler(async (req, res) => {
+  const magpie = require('../magpie');
+  const testResult = await magpie.testConnection();
+  
+  res.status(200).json({
+    ok: true,
+    test: testResult,
+    timestamp: new Date().toISOString(),
+  });
+}));
+
 router.post('/settings/cloudflare', (req, res) => {
   setSetting('cf_turnstile_site_key', String(req.body.cf_turnstile_site_key || '').trim());
   setSetting('cf_turnstile_secret_key', String(req.body.cf_turnstile_secret_key || '').trim());

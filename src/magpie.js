@@ -111,8 +111,17 @@ async function convertAmountWithCache(baseCurrency, targetCurrency, amount) {
 async function createCheckout(order, baseUrl, method = 'alipay') {
   const publicKey = settingOrEnv('magpie_api_key', 'MAGPIE_API_KEY');
   const secretKey = settingOrEnv('magpie_api_secret', 'MAGPIE_API_SECRET');
-  if (!publicKey) throw new Error('Magpie public key is not configured');
-  if (!secretKey) throw new Error('Magpie secret key is not configured');
+  
+  if (!publicKey) throw new Error('[Magpie] Public API key is not configured. Set MAGPIE_API_KEY environment variable or configure in Admin > Settings > Magpie.');
+  if (!secretKey) throw new Error('[Magpie] Secret API key is not configured. Set MAGPIE_API_SECRET environment variable or configure in Admin > Settings > Magpie.');
+  
+  // Validate API key format (should not be placeholder text)
+  if (publicKey.includes('your-') || publicKey === 'magpie-api-key' || publicKey.length < 10) {
+    console.warn('[Magpie] API key appears to be placeholder or invalid:', publicKey);
+  }
+  if (secretKey.includes('your-') || secretKey === 'magpie-api-secret' || secretKey.length < 10) {
+    console.warn('[Magpie] Secret key appears to be placeholder or invalid:', secretKey);
+  }
 
   const base = apiBase();
   const sourceType = method === 'wechat' ? 'wechat' : 'alipay';
@@ -172,12 +181,24 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
   try { sourceData = JSON.parse(sourceText); } catch (_) { /* keep raw */ }
 
   if (!sourceRes.ok) {
-    const msg = sourceData.message || sourceData.error || sourceText || 'Magpie API error';
+    // Log detailed error info for debugging
+    console.error('[Magpie] Source creation failed:', {
+      status: sourceRes.status,
+      statusText: sourceRes.statusText,
+      response: sourceData || sourceText.substring(0, 500),
+      payload: sourcePayload,
+    });
+    
+    const msg = sourceData.message || sourceData.error || sourceData.detail || sourceText || 'Magpie API error';
+    if (sourceRes.status === 401 || sourceRes.status === 403) {
+      throw new Error(`[Magpie] Authentication failed (${sourceRes.status}): ${msg}. Verify your Magpie API key in Admin > Settings > Magpie. Error: ${msg}`);
+    }
     throw new Error(`Magpie source creation failed (${sourceRes.status}): ${msg}`);
   }
 
   const sourceId = sourceData.id;
   if (!sourceId) throw new Error('Magpie source response missing id');
+
 
   const chargePayload = {
     amount: amountSmallestUnit,
@@ -201,7 +222,18 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
   try { chargeData = JSON.parse(chargeText); } catch (_) { /* keep raw */ }
 
   if (!chargeRes.ok) {
-    const msg = chargeData.message || chargeData.error || chargeText || 'Magpie API error';
+    // Log detailed error info for debugging
+    console.error('[Magpie] Charge creation failed:', {
+      status: chargeRes.status,
+      statusText: chargeRes.statusText,
+      response: chargeData || chargeText.substring(0, 500),
+      payload: chargePayload,
+    });
+    
+    const msg = chargeData.message || chargeData.error || chargeData.detail || chargeText || 'Magpie API error';
+    if (chargeRes.status === 401 || chargeRes.status === 403) {
+      throw new Error(`[Magpie] Authentication failed (${chargeRes.status}): ${msg}. Verify your Magpie API secret in Admin > Settings > Magpie. Error: ${msg}`);
+    }
     throw new Error(`Magpie charge creation failed (${chargeRes.status}): ${msg}`);
   }
 
@@ -220,6 +252,57 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
     checkoutId: chargeId,
     checkoutUrl,
   };
+}
+
+/**
+ * Test connectivity and authentication with Magpie API.
+ * Useful for debugging configuration issues.
+ */
+async function testConnection() {
+  const publicKey = settingOrEnv('magpie_api_key', 'MAGPIE_API_KEY');
+  const secretKey = settingOrEnv('magpie_api_secret', 'MAGPIE_API_SECRET');
+  const base = apiBase();
+  
+  const result = {
+    configured: !!publicKey && !!secretKey,
+    apiBase: base,
+    keyFormatValid: {
+      public: publicKey ? (publicKey.length >= 10 && !publicKey.includes('your-')) : false,
+      secret: secretKey ? (secretKey.length >= 10 && !secretKey.includes('your-')) : false,
+    },
+    tests: {},
+  };
+  
+  if (!publicKey || !secretKey) {
+    result.error = 'API keys not configured';
+    return result;
+  }
+  
+  // Test source endpoint
+  try {
+    const res = await fetch(`${base}/v1.1/sources`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${publicKey}`,
+      },
+      body: JSON.stringify({
+        type: 'alipay',
+        currency: 'cny',
+        amount: 100,
+        redirect: { success: 'https://example.com', fail: 'https://example.com' },
+      }),
+    });
+    
+    result.tests.sourceEndpoint = {
+      status: res.status,
+      ok: res.ok,
+    };
+  } catch (e) {
+    result.tests.sourceEndpoint = { error: e.message };
+  }
+  
+  return result;
 }
 
 /**
@@ -258,4 +341,5 @@ module.exports = {
   createCheckout,
   normalizeStatus,
   verifyWebhookSignature,
+  testConnection,
 };
