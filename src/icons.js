@@ -8,8 +8,6 @@ const ICONS = {
   gcash: '/static/img/payments/gcash.svg',
   maya: '/static/img/payments/maya.svg',
   paymaya: '/static/img/payments/maya.svg',
-  grabpay: '/static/img/payments/paymongo.svg',
-  grab: '/static/img/payments/paymongo.svg',
   grabpay: '/static/img/payments/grabpay.svg',
   grab: '/static/img/payments/grabpay.svg',
   shopeepay: '/static/img/payments/shopeepay.svg',
@@ -26,7 +24,7 @@ const ICONS = {
   'alipay pay': '/static/img/payments/alipay.svg',
   wechat: '/static/img/payments/wechat.svg',
   'wechat pay': '/static/img/payments/wechat.svg',
-  billease: '/static/img/payments/paymongo.svg',
+  billease: '/static/img/payments/billease.svg',
 
   // Cards
   visa: '/static/img/payments/visa.svg',
