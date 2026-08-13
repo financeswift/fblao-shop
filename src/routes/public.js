@@ -23,9 +23,15 @@ const SWIFTPAY_TYPES = [
   'swiftpay_qrph',        // QR Ph (InstaPay/PESONet — special flow with inline QR)
   // Major Philippine banks (online banking redirects)
   'swiftpay_bpi',         // Bank of the Philippine Islands
+  'swiftpay_bpi_fsb',     // BPI Family Savings Bank
+  'swiftpay_bdo',         // Banco de Oro
   'swiftpay_unionbank',   // Union Bank of the Philippines
-  'swiftpay_pnb',         // Philippine National Bank
+  'swiftpay_metrobank',   // Metropolitan Bank and Trust Company
+  'swiftpay_landbank',    // Land Bank of the Philippines
   'swiftpay_rcbc',        // RCBC (Rizal Commercial Banking Corporation)
+  'swiftpay_pnb',         // Philippine National Bank
+  'swiftpay_netbank',     // NetBank / Other institutions
+  'swiftpay_vbank',       // Virtual Bank / Other institutions
 ];
 
 async function syncSwiftpayOrderStatus(order) {
@@ -236,11 +242,17 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
       // E-wallets (direct payment, instant redirect)
       swiftpay_gcash: 'GCASH',
       swiftpay_maya: 'MAYA_WALLET',
-      // Banks (online banking login, then transfer)
+      // Philippine Banks (online banking login, then transfer to account)
       swiftpay_bpi: 'BPI',
+      swiftpay_bpi_fsb: 'BPI_FSB',
+      swiftpay_bdo: 'BDO',
       swiftpay_unionbank: 'UNIONBANK',
-      swiftpay_pnb: 'PNB',
+      swiftpay_metrobank: 'METROBANK',
+      swiftpay_landbank: 'LANDBANK',
       swiftpay_rcbc: 'RCBC',
+      swiftpay_pnb: 'PNB',
+      swiftpay_netbank: 'NETBANK',
+      swiftpay_vbank: 'VBANK',
       // swiftpay_qrph and plain 'swiftpay': use special handling (no institution_code → show selection screen)
     };
     let institutionCode = institutionMap[paymentType] || null;

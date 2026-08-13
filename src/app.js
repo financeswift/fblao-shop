@@ -6,6 +6,7 @@ const fs = require('fs');
 const express = require('express');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
+const csrf = require('csurf');
 
 const { shopContext } = require('./middleware');
 const { db, DB_PATH } = require('./db');
@@ -88,6 +89,11 @@ app.use(
     },
   })
 );
+
+// CSRF protection middleware
+// Store token in session, validate on form submissions
+const csrfProtection = csrf({ cookie: false });
+app.use(csrfProtection);
 
 // Expose shop settings + helpers to all templates.
 app.use(shopContext);

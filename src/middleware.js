@@ -35,6 +35,10 @@ function shopContext(req, res, next) {
   res.locals.user = req.session.user || null;
   res.locals.currentPath = req.path;
   res.locals.baseUrl = (process.env.BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '');
+  
+  // CSRF token for forms
+  res.locals.csrfToken = req.csrfToken();
+  
   next();
 }
 

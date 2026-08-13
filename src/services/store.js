@@ -2,6 +2,7 @@
 
 const { db } = require('../db');
 const NotificationService = require('./notifications');
+const { encrypt, decrypt } = require('../utils/encryption');
 
 const StoreService = {
   // Catalog
@@ -132,25 +133,19 @@ const StoreService = {
 
   // Add structured account data to stock pool (SIM/eSIM with credentials)
   addStructuredStockItem(productId, data) {
-    const checkStmt = db.prepare(
-      'SELECT id FROM product_stock_pool WHERE product_id = ? AND account_email_number = ? AND account_password = ? AND is_sold = 0'
-    );
     const insertStmt = db.prepare(`
       INSERT INTO product_stock_pool (product_id, account_email_number, account_password, sim_type, esim_qrcode)
       VALUES (?, ?, ?, ?, ?)
     `);
 
     const tx = db.transaction(() => {
-      // Duplicate prevention: check if same account already exists
-      const exists = checkStmt.get(productId, data.account_email_number, data.account_password);
-      if (exists) {
-        return false;
-      }
+      // Encrypt password before storing
+      const encryptedPassword = encrypt(data.account_password);
 
       insertStmt.run(
         productId,
         data.account_email_number,
-        data.account_password,
+        encryptedPassword,
         data.sim_type || 'SIM',
         data.esim_qrcode || null
       );
@@ -210,7 +205,9 @@ const StoreService = {
     if (items[0].account_email_number) {
       // Structured account data with credentials and SIM type
       const contentLines = items.map(item => {
-        let line = `Email/Number: ${item.account_email_number}\nPassword: ${item.account_password}\nSIM Type: ${item.sim_type || 'SIM'}`;
+        // Decrypt password before displaying
+        const decryptedPassword = decrypt(item.account_password) || item.account_password;
+        let line = `Email/Number: ${item.account_email_number}\nPassword: ${decryptedPassword}\nSIM Type: ${item.sim_type || 'SIM'}`;
         
         if (item.sim_type === 'eSIM' && item.esim_qrcode) {
           line += `\neSIM QR Code: ${item.esim_qrcode}`;

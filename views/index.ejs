@@ -133,6 +133,7 @@
     <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
     <h3 class="modal-title">Buy / 购买 <span id="m-product"></span></h3>
     <form method="POST" action="/order" id="buyForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="product_id" id="m-product-id">
       <input type="hidden" name="payment_type" id="m-payment-type">
       <input type="hidden" name="manual_method_id" id="m-manual-id">
@@ -222,11 +223,43 @@
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
+          <button type="button" class="pay-method-btn" data-pay="swiftpay_bpi_fsb">
+            <img class="pay-method-logo" src="<%= getIcon('bpi-fsb') %>" alt="BPI FSB">
+            <span class="pay-method-info">
+              <strong>BPI Family Savings Bank</strong>
+              <small>BSP-Supervised Bank</small>
+            </span>
+            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <button type="button" class="pay-method-btn" data-pay="swiftpay_bdo">
+            <img class="pay-method-logo" src="<%= getIcon('bdo') %>" alt="BDO">
+            <span class="pay-method-info">
+              <strong>BDO</strong>
+              <small>Banco de Oro / BDO Online</small>
+            </span>
+            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_unionbank">
             <img class="pay-method-logo" src="<%= getIcon('unionbank') %>" alt="UnionBank">
             <span class="pay-method-info">
               <strong>UnionBank</strong>
               <small>Union Bank of the Philippines / UB Online</small>
+            </span>
+            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <button type="button" class="pay-method-btn" data-pay="swiftpay_metrobank">
+            <img class="pay-method-logo" src="<%= getIcon('metrobank') %>" alt="Metrobank">
+            <span class="pay-method-info">
+              <strong>Metrobank</strong>
+              <small>Metropolitan Bank and Trust Company</small>
+            </span>
+            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <button type="button" class="pay-method-btn" data-pay="swiftpay_landbank">
+            <img class="pay-method-logo" src="<%= getIcon('landbank') %>" alt="LandBank">
+            <span class="pay-method-info">
+              <strong>LandBank</strong>
+              <small>Land Bank of the Philippines</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
@@ -243,6 +276,22 @@
             <span class="pay-method-info">
               <strong>PNB</strong>
               <small>Philippine National Bank / PNB Online</small>
+            </span>
+            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <button type="button" class="pay-method-btn" data-pay="swiftpay_netbank">
+            <img class="pay-method-logo" src="<%= getIcon('netbank') %>" alt="NetBank">
+            <span class="pay-method-info">
+              <strong>NetBank</strong>
+              <small>NetBank Online Payments</small>
+            </span>
+            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <button type="button" class="pay-method-btn" data-pay="swiftpay_vbank">
+            <img class="pay-method-logo" src="<%= getIcon('vbank') %>" alt="VBank">
+            <span class="pay-method-info">
+              <strong>Virtual Bank</strong>
+              <small>VBank Online Payments</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
