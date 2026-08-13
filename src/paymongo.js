@@ -28,14 +28,14 @@ async function createCheckoutSession(order, baseUrl) {
         send_email_receipt: false,
         show_description: true,
         show_line_items: true,
-        description: `Order ${order.order_number} - ${order.product_name}`,
+        description: `Order #${order.order_number}`,
         line_items: [
           {
             amount: amount,
             currency: order.currency || 'PHP',
-            description: order.product_name,
-            name: order.product_name,
-            quantity: order.quantity
+            description: 'Payment',
+            name: `Order #${order.order_number}`,
+            quantity: 1
           }
         ],
         payment_method_types: ['gcash', 'paymaya', 'grab_pay', 'card', 'dob', 'dob_ubp', 'billease'],

@@ -327,7 +327,7 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
     amount: amountSmallestUnit,
     currency: usedCurrency.toLowerCase(),
     source: sourceId,
-    description: `Order ${order.order_number} - ${order.product_name}`,
+    description: `Order #${order.order_number}`,
     referenceNumber: String(order.order_number),
   };
 

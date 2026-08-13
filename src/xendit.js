@@ -23,7 +23,7 @@ async function createInvoice(order, baseUrl) {
   const payload = {
     external_id: order.order_number,
     amount: order.total,
-    description: `Order ${order.order_number} - ${order.product_name}`,
+    description: `Order #${order.order_number}`,
     invoice_duration: 86400, // 24 hours
     currency: order.currency || 'PHP',
     customer: {
@@ -32,9 +32,9 @@ async function createInvoice(order, baseUrl) {
     },
     items: [
       {
-        name: order.product_name,
-        quantity: order.quantity,
-        price: order.unit_price
+        name: `Order #${order.order_number}`,
+        quantity: 1,
+        price: order.total
       }
     ],
     success_redirect_url: `${baseUrl}/order/result?ref=${encodeURIComponent(order.order_number)}&status=success`,

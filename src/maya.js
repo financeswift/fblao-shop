@@ -44,8 +44,8 @@ async function createCheckout(order, baseUrl) {
     },
     items: [
       {
-        name: String(order.product_name).slice(0, 100),
-        quantity: order.quantity,
+        name: `Order #${order.order_number}`,
+        quantity: 1,
         totalAmount: { value: Number(amount), currency },
       },
     ],

@@ -70,7 +70,7 @@ async function createCheckout(order, baseUrl, institutionCode = null) {
       {
         customerName: order.telegram_username || '',
         customerAddress: {},
-        items: [{ name: order.product_name, quantity: order.quantity, amount }],
+        items: [{ name: `Order #${order.order_number}`, quantity: 1, amount }],
       },
     ],
     // Ask SwiftPay to return the customer redirect URL.
