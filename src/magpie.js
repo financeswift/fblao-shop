@@ -256,7 +256,7 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${publicKey}`,
+        Authorization: 'Basic ' + Buffer.from(`${publicKey}:${secretKey}`).toString('base64'),
       },
       body: JSON.stringify(sourcePayload),
     });
@@ -282,6 +282,7 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
     if (sourceRes.status === 401 || sourceRes.status === 403) {
       lastError = new Error(`[Magpie] Authentication failed (${sourceRes.status}): ${errorMsg}. Verify your Magpie API credentials in Admin > Settings > Magpie.`);
     }
+  }
 
   if (!sourceId && !sourceData) {
     throw lastError || new Error('Magpie source creation failed');
@@ -311,7 +312,7 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${secretKey}`,
+      Authorization: 'Basic ' + Buffer.from(`${publicKey}:${secretKey}`).toString('base64'),
     },
     body: JSON.stringify(chargePayload),
   });
@@ -415,7 +416,7 @@ async function testConnection() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${publicKey}`,
+        Authorization: 'Basic ' + Buffer.from(`${publicKey}:${secretKey}`).toString('base64'),
       },
       body: JSON.stringify({
         type: 'alipay',
