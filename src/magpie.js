@@ -394,10 +394,12 @@ async function testConnection() {
   const publicKey = settingOrEnv('magpie_api_key', 'MAGPIE_API_KEY');
   const secretKey = settingOrEnv('magpie_api_secret', 'MAGPIE_API_SECRET');
   const base = apiBase();
+  const modeUsed = settingOrEnv('magpie_mode', 'MAGPIE_MODE', 'sandbox');
   
   const result = {
     configured: !!publicKey && !!secretKey,
     apiBase: base,
+    mode: modeUsed,
     keyFormatValid: {
       public: publicKey ? (publicKey.length >= 10 && !publicKey.includes('your-')) : false,
       secret: secretKey ? (secretKey.length >= 10 && !secretKey.includes('your-')) : false,
@@ -425,10 +427,12 @@ async function testConnection() {
         redirect: { success: 'https://example.com', fail: 'https://example.com' },
       }),
     });
-    
+    const text = await res.text();
     result.tests.sourceEndpoint = {
       status: res.status,
       ok: res.ok,
+      bodySnippet: typeof text === 'string' ? text.substring(0, 1000) : null,
+      url: apiUrl('sources'),
     };
   } catch (e) {
     result.tests.sourceEndpoint = { error: e.message };
