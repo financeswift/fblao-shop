@@ -258,11 +258,6 @@ router.post('/categories/:id/update', (req, res) => {
   flash(req, 'Category updated.');
   res.redirect('/admin/categories');
 });
-router.post('/categories/:id/delete', (req, res) => {
-  StoreService.deleteCategory(req.params.id);
-  flash(req, 'Category and its products deleted.');
-  res.redirect('/admin/categories');
-});
 
 // ---- Products --------------------------------------------------------------
 router.get('/products', (req, res) => {
@@ -394,7 +389,6 @@ router.get('/products/:id/stock/download-template', (req, res) => {
            'example_item_2\n' +
            'email:password:2fa_token');
 });
-
 router.post('/products/:id/stock/add', multer().single('csv_file'), (req, res) => {
   let lines = [];
 
@@ -671,7 +665,7 @@ router.post('/settings/magpie', (req, res) => {
   res.redirect('/admin/settings');
 });
 
-// Test Magpie API connectivity
+// Test Magpie API connectivity (POST)
 router.post('/test/magpie', asyncHandler(async (req, res) => {
   const magpie = require('../magpie');
   const testResult = await magpie.testConnection();
@@ -681,6 +675,16 @@ router.post('/test/magpie', asyncHandler(async (req, res) => {
     test: testResult,
     timestamp: new Date().toISOString(),
   });
+}));
+
+// Test Magpie API connectivity (GET) - convenience for mobile/browser when logged in
+router.get('/test/magpie', asyncHandler(async (req, res) => {
+  const magpie = require('../magpie');
+  const testResult = await magpie.testConnection();
+  
+  // Render a simple page showing JSON result for convenience
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).send(JSON.stringify({ ok: true, test: testResult, timestamp: new Date().toISOString() }, null, 2));
 }));
 
 router.post('/settings/cloudflare', (req, res) => {
