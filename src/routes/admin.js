@@ -413,6 +413,24 @@ router.post('/products/:id/stock/add', multer().single('csv_file'), (req, res) =
   res.redirect(`/admin/products/${req.params.id}/stock`);
 });
 
+// Add single stock item (from modal pop-up)
+router.post('/products/:id/stock/add-single', (req, res) => {
+  const content = String(req.body.content || '').trim();
+  
+  if (!content) {
+    flash(req, 'Please enter account details.', 'error');
+    return res.redirect(`/admin/products/${req.params.id}/stock`);
+  }
+
+  const added = StoreService.addStockToPool(req.params.id, [content]);
+  if (added > 0) {
+    flash(req, 'Stock item added successfully! (+1)');
+  } else {
+    flash(req, 'Item already exists in the pool.', 'warning');
+  }
+  res.redirect(`/admin/products/${req.params.id}/stock`);
+});
+
 router.post('/products/:id/stock/clear', (req, res) => {
   db.prepare('DELETE FROM product_stock_pool WHERE product_id = ? AND is_sold = 0').run(req.params.id);
   StoreService.syncProductStockCount(req.params.id);
