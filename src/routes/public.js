@@ -68,7 +68,7 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
   const telegramUsername = String(req.body.telegram_username || '').trim().replace(/^@/, '');
   const productId = parseInt(req.body.product_id, 10);
   const quantity = Math.max(1, parseInt(req.body.quantity, 10) || 1);
-  const paymentType = req.body.payment_type; // 'manual', 'maya', 'coins', 'paymongo', 'xendit', 'swiftpay', 'swiftpay_maya', 'swiftpay_qrph', 'swiftpay_gcash', 'swiftpay_grabpay', 'swiftpay_shopeepay', 'swiftpay_card', 'magpie_alipay', 'magpie_wechat'
+  const paymentType = req.body.payment_type; // 'manual', 'maya', 'coins', 'paymongo', 'xendit', 'swiftpay', 'swiftpay_maya', 'swiftpay_qrph', 'swiftpay_gcash', 'swiftpay_grabpay', 'swiftpay_shope[...]
   const manualMethodId = req.body.manual_method_id ? parseInt(req.body.manual_method_id, 10) : null;
 
   if (!telegramUsername) {
@@ -257,7 +257,8 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
     try {
       const { checkoutId, checkoutUrl } = await swiftpay.createCheckout(order, res.locals.baseUrl, institutionCode);
       db.prepare('UPDATE orders SET swiftpay_checkout_id = ?, swiftpay_checkout_url = ? WHERE id = ?').run(checkoutId, checkoutUrl, order.id);
-      return res.redirect(`/swiftpay/checkout?ref=${encodeURIComponent(orderNumber)}`);
+      // ✅ FIXED: Redirect immediately to SwiftPay checkout URL (like Maya does)
+      return res.redirect(checkoutUrl);
     } catch (e) {
       db.prepare("UPDATE orders SET status = 'failed', admin_notes = ? WHERE id = ?").run(
         'Swiftpay checkout error: ' + e.message,
@@ -275,6 +276,7 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
       const method = paymentType === 'magpie_wechat' ? 'wechat' : 'alipay';
       const { checkoutId, checkoutUrl } = await magpie.createCheckout(order, res.locals.baseUrl, method);
       db.prepare('UPDATE orders SET magpie_checkout_id = ? WHERE id = ?').run(checkoutId, order.id);
+      // ✅ FIXED: Redirect immediately to Magpie checkout URL (matching SwiftPay pattern)
       return res.redirect(checkoutUrl);
     } catch (e) {
       db.prepare("UPDATE orders SET status = 'failed', admin_notes = ? WHERE id = ?").run(
