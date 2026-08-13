@@ -1,7 +1,10 @@
-# BlackHorse — Digital Goods Storefront
+# 🐎 BlackHorse — Digital Goods Storefront
 
-A simple, self-contained storefront for selling digital goods (accounts, BMs, emails, etc.)
-with **Maya Checkout** online payments and **manual payment** methods (GCash / bank transfer).
+A battle-tested, production-ready source code for selling digital goods (accounts, BMs, emails, credentials, etc.)
+with **7 payment processors** (Maya, Swiftpay, Magpie, PayMongo, Xendit, Coins, Manual).
+
+> 📌 **Interested in purchasing this source code?** See [FOR_SALE.md](FOR_SALE.md) for pricing, licensing, and complete feature list.
+
 Layout follows the FB-account autoshop reference style: shop header, announcement banners,
 and product listings grouped into category tables (Product · Price · Stock · Buy).
 
@@ -16,6 +19,8 @@ and product listings grouped into category tables (Product · Price · Stock · 
 - **Order query page** — customers check status / retrieve their delivery using email + order number.
 - **Admin panel** — secure login; manage products, categories, banners, manual payment methods,
   Maya keys, and orders (mark paid, deliver account credentials).
+
+📋 **Full feature list:** See [FEATURES.md](FEATURES.md) — 7 payment gateways, telegram bot, audit logging, stock pool, and more.
 
 ## Tech
 
