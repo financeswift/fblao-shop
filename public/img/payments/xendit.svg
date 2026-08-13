@@ -1,7 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="96" viewBox="0 0 320 96" role="img" aria-labelledby="title">
-  <title id="title">Xendit</title>
-  <rect width="320" height="96" rx="24" fill="#ffffff"/>
-  <rect x="2" y="2" width="316" height="92" rx="22" fill="none" stroke="#dbe4f0" stroke-width="2"/>
-  <path d="M44 32h12l10 14l10-14h12L72 48l16 16H76L66 50L56 64H44l16-16z" fill="#14b8a6"/>
-  <text x="104" y="57" font-size="28" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="#0f172a">Xendit</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40">
+  <defs>
+    <linearGradient id="xenditGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5E3FBE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4F2DA6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="40" rx="4" fill="url(#xenditGrad)"/>
+  <path d="M20 20 L28 14 L28 26 Z" fill="#ffffff" opacity="0.9"/>
+  <text x="60" y="26" font-family="Arial, sans-serif" font-weight="800" font-size="11" fill="#ffffff" text-anchor="middle">Xendit</text>
 </svg>

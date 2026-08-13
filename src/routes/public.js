@@ -131,7 +131,9 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
     total: +(product.price * quantity).toFixed(2),
     currency: getSetting('currency', 'PHP'),
     paymentType,
-    manualMethodId: paymentType === 'manual' ? manualMethodId : null
+    manualMethodId: paymentType === 'manual' ? manualMethodId : null,
+    simTypeSelected: req.body.sim_type_selected || null,
+    deliveryAddress: req.body.delivery_address || null
   });
 
   // Notify admin

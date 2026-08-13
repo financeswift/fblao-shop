@@ -1,4 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40">
-  <rect width="160" height="40" rx="6" fill="#e31837"/>
-  <text x="80" y="26" font-family="Arial,sans-serif" font-weight="800" font-size="12" fill="#fff" text-anchor="middle" letter-spacing="0.3">Security Bank</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40">
+  <defs>
+    <linearGradient id="sbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E84C3D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C73828;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="40" rx="4" fill="url(#sbGrad)"/>
+  <path d="M20 24 L24 14 L28 24" fill="#ffffff" opacity="0.8"/>
+  <text x="60" y="27" font-family="Arial, sans-serif" font-weight="700" font-size="9" fill="#ffffff" text-anchor="middle">SECBANK</text>
 </svg>

@@ -39,9 +39,9 @@
         <table class="kv" style="margin: 0;">
           <tr style="border-bottom: 1px solid var(--border);">
             <th style="padding: 12px; background: rgba(255,255,255,0.02);">Order Number</th>
-            <td style="padding: 12px;">
-              <strong><%= order.order_number %></strong>
-              <button class="btn btn-sm" style="padding: 2px 6px; font-size: 10px; margin-left: 10px;" onclick="copyStatusVal('<%= order.order_number %>', this)">Copy</button>
+            <td style="padding: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <strong style="flex: 1; min-width: 100px;"><%= order.order_number %></strong>
+              <button class="btn btn-sm" style="padding: 4px 8px; font-size: 10px; white-space: nowrap;" onclick="copyStatusVal('<%= order.order_number %>', this)">Copy</button>
             </td>
           </tr>
           <tr style="border-bottom: 1px solid var(--border);">
@@ -101,6 +101,22 @@
                </span>
             </td>
           </tr>
+          <% if (order.sim_type_selected) { %>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <th style="padding: 12px; background: rgba(255,255,255,0.02);">SIM Type</th>
+            <td style="padding: 12px;">
+              <span style="display:inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; color:white; background: <%= order.sim_type_selected === 'eSIM' ? '#7c3aed' : '#2563eb' %>;">
+                <%= order.sim_type_selected === 'eSIM' ? 'eSIM' : 'Physical SIM' %>
+              </span>
+            </td>
+          </tr>
+          <% } %>
+          <% if (order.delivery_address) { %>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <th style="padding: 12px; background: rgba(255,255,255,0.02);">Delivery Address</th>
+            <td style="padding: 12px; white-space: pre-wrap; word-break: break-word; line-height: 1.5;"><%= order.delivery_address %></td>
+          </tr>
+          <% } %>
           <tr>
             <th style="padding: 12px; background: rgba(255,255,255,0.02);">Total Paid</th>
             <td style="padding: 12px;"><strong><%= money(order.total) %></strong></td>
@@ -117,11 +133,31 @@
     <% } %>
 
     <% if (order.status === 'delivered' && order.delivered_content) { %>
+      <% 
+        const deliveryText = order.delivered_content || '';
+        const esimQrMatch = deliveryText.match(/eSIM QR Code:\s*([A-Za-z0-9+/=\r\n]+)/i);
+        const esimQrData = esimQrMatch ? esimQrMatch[1].replace(/\s+/g, '') : '';
+      %>
       <div class="delivery">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <h3 style="margin:0;">Your delivery credentials</h3>
           <button class="btn btn-sm" onclick="copyStatusVal(document.getElementById('delivery-content').innerText, this)">Copy All</button>
         </div>
+        <% if (esimQrData) { %>
+          <div style="margin-bottom: 18px; padding: 18px; border: 1px solid rgba(124,58,237,0.45); border-radius: 12px; background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(37,99,235,0.06)); box-shadow: 0 8px 24px rgba(124,58,237,0.08);">
+            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; font-weight: 700;">eSIM QR Code</div>
+            <div style="display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
+              <img src="data:image/png;base64,<%= esimQrData %>" alt="eSIM QR Code" style="max-width: 180px; width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--border); background: white; padding: 10px;">
+              <div style="flex: 1; min-width: 180px;">
+                <div style="font-size: 13px; color: var(--text); margin-bottom: 10px; line-height: 1.5;">Scan this QR code in your phone’s eSIM settings to activate the digital SIM immediately.</div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <a class="btn btn-sm btn-primary" href="data:image/png;base64,<%= esimQrData %>" download="esim-qr.png">Download QR</a>
+                  <button class="btn btn-sm btn-light" type="button" onclick="copyStatusVal(document.getElementById('delivery-content').innerText, this)">Copy details</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% } %>
         <p class="ref-note">Your product is shown below and stays available on this page when you look up the same Telegram username and order number again. / 您的商品内容显示在下方，之后再次使用相同的电报用户名和订单号查询时，仍可在此页面查看。</p>
         <pre class="delivery-body" id="delivery-content"><%= order.delivered_content %></pre>
       </div>

@@ -121,6 +121,10 @@
     var elUnit = document.getElementById('m-unit');
     var elTotal = document.getElementById('m-total');
     var elManualId = document.getElementById('m-manual-id');
+    var elSimType = document.getElementById('m-sim-type');
+    var elDeliveryAddress = document.getElementById('m-delivery-address');
+    var simTypeSection = document.getElementById('simTypeSection');
+    var deliveryAddressSection = document.getElementById('deliveryAddressSection');
 
     var current = { price: 0, stock: 1, min: 1 };
 
@@ -143,6 +147,29 @@
       elQty.min = current.min;
       elQty.max = current.stock;
       recalc();
+      
+      // Reset SIM type and delivery address fields
+      if (elSimType) {
+        elSimType.value = '';
+        elSimType.required = false;
+      }
+      if (elDeliveryAddress) {
+        elDeliveryAddress.value = '';
+        elDeliveryAddress.required = false;
+      }
+      
+      // Show/hide SIM type section based on product category
+      // For now, show it for all products - admin will leave empty if not applicable
+      if (simTypeSection) {
+        simTypeSection.style.display = 'block';
+        if (elSimType) {
+          elSimType.required = true;
+        }
+      }
+      if (deliveryAddressSection) {
+        deliveryAddressSection.style.display = 'none';
+      }
+      
       modal.classList.add('is-open');
       document.body.style.overflow = 'hidden';
     }
@@ -162,6 +189,25 @@
 
     elQty.addEventListener('input', recalc);
 
+    // Handle SIM type change - show/hide delivery address
+    if (elSimType) {
+      elSimType.addEventListener('change', function () {
+        if (this.value === 'SIM') {
+          if (deliveryAddressSection) deliveryAddressSection.style.display = 'block';
+          if (elDeliveryAddress) {
+            elDeliveryAddress.required = true;
+            elDeliveryAddress.focus();
+          }
+        } else {
+          if (deliveryAddressSection) deliveryAddressSection.style.display = 'none';
+          if (elDeliveryAddress) {
+            elDeliveryAddress.required = false;
+            elDeliveryAddress.value = '';
+          }
+        }
+      });
+    }
+
     var elPaymentType = document.getElementById('m-payment-type');
     var elTelegram = document.getElementById('m-telegram');
 
@@ -178,6 +224,28 @@
           }
           return;
         }
+        
+        // Validate SIM type if required
+        if (elSimType && elSimType.required && !elSimType.value) {
+          elSimType.focus();
+          elSimType.setCustomValidity('Please select a SIM type.');
+          elSimType.reportValidity();
+          elSimType.setCustomValidity('');
+          return;
+        }
+        
+        // Validate delivery address if SIM type is 'SIM'
+        if (elSimType && elSimType.value === 'SIM' && elDeliveryAddress) {
+          var address = elDeliveryAddress.value.trim();
+          if (!address) {
+            elDeliveryAddress.focus();
+            elDeliveryAddress.setCustomValidity('Please enter your delivery address.');
+            elDeliveryAddress.reportValidity();
+            elDeliveryAddress.setCustomValidity('');
+            return;
+          }
+        }
+        
         var pay = btn.getAttribute('data-pay');
         var manual = btn.getAttribute('data-manual') || '';
         if (elPaymentType) elPaymentType.value = pay;

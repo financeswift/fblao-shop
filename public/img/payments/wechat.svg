@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="96" viewBox="0 0 320 96" role="img" aria-labelledby="title">
-  <title id="title">WeChat Pay</title>
-  <rect width="320" height="96" rx="24" fill="#07c160"/>
-  <rect x="2" y="2" width="316" height="92" rx="22" fill="none" stroke="#bbf7d0" stroke-width="2" opacity=".4"/>
-  <circle cx="60" cy="48" r="20" fill="#ffffff"/>
-  <circle cx="84" cy="58" r="16" fill="#dcfce7"/>
-  <circle cx="54" cy="45" r="2.6" fill="#0f172a"/>
-  <circle cx="66" cy="45" r="2.6" fill="#0f172a"/>
-  <circle cx="78" cy="56" r="2.6" fill="#0f172a"/>
-  <circle cx="88" cy="56" r="2.6" fill="#0f172a"/>
-  <text x="114" y="56" font-size="26" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="#ffffff">WeChat Pay</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40">
+  <defs>
+    <linearGradient id="wechatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#09B83E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#068D2E;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="40" rx="4" fill="url(#wechatGrad)"/>
+  <circle cx="24" cy="20" r="7" fill="#ffffff" opacity="0.9"/>
+  <path d="M21 18 L27 18 L27 22 L21 22 Z" fill="#09B83E"/>
+  <text x="60" y="26" font-family="Arial, sans-serif" font-weight="700" font-size="10" fill="#ffffff" text-anchor="middle">WeChat</text>
 </svg>

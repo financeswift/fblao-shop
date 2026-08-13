@@ -51,17 +51,81 @@
             <% } %>
           </td>
         </tr>
+        <% if (order.sim_type_selected) { %>
+          <tr>
+            <th>SIM Type</th>
+            <td>
+              <span style="display: inline-block; padding: 4px 10px; background: var(--accent-2); color: white; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                <%= order.sim_type_selected === 'eSIM' ? '📱 eSIM (Digital)' : '🎫 Physical SIM' %>
+              </span>
+            </td>
+          </tr>
+        <% } %>
+        <% if (order.delivery_address) { %>
+          <tr>
+            <th>Delivery Address</th>
+            <td style="max-width: 300px; word-break: break-word;">
+              <code style="font-size: 11px; background: var(--panel-2); padding: 6px 8px; border-radius: 4px; display: block; line-height: 1.4;">
+                <%= order.delivery_address %>
+              </code>
+              <button class="btn btn-sm" style="padding: 2px 6px; font-size: 10px; margin-top: 4px;" onclick="copyVal('<%= order.delivery_address %>', 'Address', this)">Copy</button>
+            </td>
+          </tr>
+        <% } %>
       </table>
     </div>
 
     <% if (typeof poolItems !== 'undefined' && poolItems.length > 0) { %>
       <div class="subpanel">
         <h2>Auto-Delivered Items</h2>
-        <div class="stack" style="gap: 8px;">
-          <% poolItems.forEach(function(item) { %>
-            <div style="background: var(--panel-2); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
-              <code style="font-size: 11px; color: var(--accent-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 10px;"><%= item.content %></code>
-              <button class="btn btn-sm" style="padding: 2px 8px; font-size: 10px;" onclick="copyVal('<%= item.content %>', 'Item', this)">Copy</button>
+        <div class="stack" style="gap: 12px;">
+          <% poolItems.forEach(function(item, idx) { %>
+            <div style="background: var(--panel-2); border: 1px solid var(--border); padding: 12px; border-radius: 6px;">
+              <% if (item.account_email_number) { %>
+                <!-- Structured Account Data -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+                  <div>
+                    <span class="muted" style="font-size: 10px; text-transform: uppercase;">Email/Number</span>
+                    <div style="font-weight: 600; font-family: monospace; font-size: 12px; margin-top: 2px;"><%= item.account_email_number %></div>
+                  </div>
+                  <div>
+                    <span class="muted" style="font-size: 10px; text-transform: uppercase;">Password</span>
+                    <div style="font-weight: 600; font-family: monospace; font-size: 12px; margin-top: 2px;"><%= item.account_password %></div>
+                  </div>
+                  <div>
+                    <span class="muted" style="font-size: 10px; text-transform: uppercase;">SIM Type</span>
+                    <div style="margin-top: 4px;">
+                      <span style="display: inline-block; padding: 3px 8px; background: <%= item.sim_type === 'eSIM' ? '#7c3aed' : '#3b82f6' %>; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">
+                        <%= item.sim_type === 'eSIM' ? '📱 eSIM' : '🎫 SIM Card' %>
+                      </span>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 6px;">
+                    <button class="btn btn-sm" style="padding: 2px 8px; font-size: 10px; flex: 1;" onclick="copyAccountData('<%= encodeURIComponent(item.account_email_number) %>', '<%= encodeURIComponent(item.account_password) %>', this)">Copy Creds</button>
+                  </div>
+                </div>
+                
+                <!-- eSIM QR Code Display -->
+                <% if (item.sim_type === 'eSIM' && item.esim_qrcode) { %>
+                  <div style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 10px;">
+                    <span class="muted" style="font-size: 10px; text-transform: uppercase; display: block; margin-bottom: 8px; font-weight: 700;">eSIM QR Code</span>
+                    <div style="display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;">
+                      <img src="data:image/png;base64,<%= item.esim_qrcode %>" alt="eSIM QR Code" style="max-width: 120px; width: 100%; height: auto; border: 2px solid var(--border); border-radius: 8px; background: white; padding: 6px;">
+                      <div style="flex: 1; min-width: 140px;">
+                        <small class="muted" style="display:block; line-height:1.5;">This QR code is attached to the stock item and must be shown to the buyer after delivery.</small>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                          <button type="button" class="btn btn-sm" style="padding: 3px 8px; font-size: 10px;" onclick="downloadQRCode('<%= item.esim_qrcode %>', 'esim-qr-<%= idx %>.png')">Download QR</button>
+                          <button type="button" class="btn btn-sm" style="padding: 3px 8px; font-size: 10px;" onclick="window.open('data:image/png;base64,<%= item.esim_qrcode %>', '_blank')">Open</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% } %>
+              <% } else { %>
+                <!-- Legacy Plain Text Content -->
+                <code style="font-size: 11px; color: var(--accent-2); display: block; white-space: pre-wrap; word-break: break-word; background: var(--panel); padding: 8px; border-radius: 4px; margin-bottom: 8px;"><%= item.content %></code>
+                <button class="btn btn-sm" style="padding: 2px 8px; font-size: 10px;" onclick="copyVal('<%= item.content %>', 'Item', this)">Copy</button>
+              <% } %>
             </div>
           <% }) %>
         </div>
@@ -190,6 +254,33 @@ function copyVal(val, label, btn) {
   } else {
     alert('Clipboard not supported');
   }
+}
+
+function copyAccountData(email, password, btn) {
+  const text = `Email/Number: ${decodeURIComponent(email)}\nPassword: ${decodeURIComponent(password)}`;
+  
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      const oldText = btn.innerText;
+      btn.innerText = 'Copied!';
+      btn.style.color = 'var(--green)';
+      setTimeout(() => {
+        btn.innerText = oldText;
+        btn.style.color = '';
+      }, 1500);
+    });
+  } else {
+    alert('Clipboard not supported');
+  }
+}
+
+function downloadQRCode(base64Data, filename) {
+  const link = document.createElement('a');
+  link.href = 'data:image/png;base64,' + base64Data;
+  link.download = filename || 'esim-qr.png';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 </script>
 <%- include('partials/foot') %>

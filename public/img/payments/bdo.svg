@@ -1,4 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40">
-  <rect width="120" height="40" rx="6" fill="#003087"/>
-  <text x="60" y="26" font-family="Arial,sans-serif" font-weight="800" font-size="16" fill="#fff" text-anchor="middle" letter-spacing="1">BDO</text>
+  <defs>
+    <linearGradient id="bdoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00247D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#001B5A;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="40" rx="4" fill="url(#bdoGrad)"/>
+  <circle cx="30" cy="20" r="8" fill="#D4AF37" opacity="0.8"/>
+  <text x="60" y="27" font-family="Arial, sans-serif" font-weight="900" font-size="16" fill="#D4AF37" text-anchor="middle">BDO</text>
 </svg>

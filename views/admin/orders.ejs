@@ -193,6 +193,13 @@
         <td>
           <div style="font-weight: 500;"><%= o.product_name %></div>
           <div class="muted" style="font-size: 11px;">Qty: <%= o.quantity %></div>
+          <% if (o.sim_type_selected) { %>
+            <div style="margin-top: 4px;">
+              <span style="display: inline-block; padding: 2px 6px; background: <%= o.sim_type_selected === 'eSIM' ? '#7c3aed' : '#3b82f6' %>; color: white; border-radius: 3px; font-size: 10px; font-weight: 600;">
+                <%= o.sim_type_selected === 'eSIM' ? 'eSIM' : 'SIM' %>
+              </span>
+            </div>
+          <% } %>
         </td>
         <td>
           <div style="color: var(--accent-2); font-weight: 700;"><%= money(o.total) %></div>

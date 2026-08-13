@@ -68,7 +68,7 @@
             <div style="display: flex; align-items: center; gap: 8px;">
               <strong style="font-size: 14px; <%= p.stock <= 5 ? 'color: var(--red);' : 'color: var(--green);' %>"><%= p.stock %></strong>
               <% if (p.auto_deliver) { %>
-                <a href="/admin/products/<%= p.id %>/stock" class="btn btn-sm" style="padding: 2px 6px; font-size: 10px; background: rgba(212, 175, 55, 0.1); color: var(--accent); border-color: var(--accent);">Pool</a>
+                <a href="/admin/products/<%= p.id %>/stock" class="btn btn-sm" style="padding: 2px 6px; font-size: 10px; background: rgba(212, 175, 55, 0.1); color: var(--accent); border-color: var(--accent); white-space: nowrap;">📦 Pool</a>
               <% } %>
             </div>
           </td>

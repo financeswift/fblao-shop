@@ -36,6 +36,19 @@
     <% if (order.email) { %><tr><th>Email</th><td><%= order.email %></td></tr><% } %>
     <tr><th>Product</th><td><%= order.product_name %></td></tr>
     <tr><th>Quantity</th><td><%= order.quantity %></td></tr>
+    <% if (order.sim_type_selected) { %>
+      <tr>
+        <th>SIM Type</th>
+        <td>
+          <span style="display:inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; color:white; background: <%= order.sim_type_selected === 'eSIM' ? '#7c3aed' : '#2563eb' %>;">
+            <%= order.sim_type_selected === 'eSIM' ? 'eSIM' : 'Physical SIM' %>
+          </span>
+        </td>
+      </tr>
+    <% } %>
+    <% if (order.delivery_address) { %>
+      <tr><th>Delivery Address</th><td style="white-space: pre-wrap; word-break: break-word; line-height: 1.5;"><%= order.delivery_address %></td></tr>
+    <% } %>
     <tr><th>Total</th><td><%= money(order.total) %></td></tr>
   </table>
 
@@ -50,8 +63,28 @@
   <% } %>
 
   <% if (order.status === 'delivered' && order.delivered_content) { %>
+    <% 
+      const deliveryText = order.delivered_content || '';
+      const esimQrMatch = deliveryText.match(/eSIM QR Code:\s*([A-Za-z0-9+/=\r\n]+)/i);
+      const esimQrData = esimQrMatch ? esimQrMatch[1].replace(/\s+/g, '') : '';
+    %>
     <div class="delivery">
       <h3>Your delivery / 发货内容</h3>
+      <% if (esimQrData) { %>
+        <div style="margin: 16px 0; padding: 18px; border: 1px solid rgba(124,58,237,0.45); border-radius: 12px; background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(37,99,235,0.06)); box-shadow: 0 8px 24px rgba(124,58,237,0.08);">
+          <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; font-weight: 700;">eSIM QR Code</div>
+          <div style="display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
+            <img src="data:image/png;base64,<%= esimQrData %>" alt="eSIM QR Code" style="max-width: 170px; width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--border); background: white; padding: 10px;">
+            <div style="flex: 1; min-width: 180px;">
+              <div style="font-size: 13px; color: var(--text); margin-bottom: 10px; line-height: 1.5;">Scan this QR code in your phone’s eSIM settings to activate the digital SIM immediately.</div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a class="btn btn-sm btn-primary" href="data:image/png;base64,<%= esimQrData %>" download="esim-qr.png">Download QR</a>
+                <button class="btn btn-sm btn-light" type="button" onclick="navigator.clipboard && navigator.clipboard.writeText('<%= escapeHtml(deliveryText.replace(/\n/g, '\\n')) %>')">Copy details</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
       <pre class="delivery-body"><%= order.delivered_content %></pre>
     </div>
   <% } else if (order.status === 'paid') { %>

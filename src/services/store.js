@@ -130,6 +130,38 @@ const StoreService = {
     return added;
   },
 
+  // Add structured account data to stock pool (SIM/eSIM with credentials)
+  addStructuredStockItem(productId, data) {
+    const checkStmt = db.prepare(
+      'SELECT id FROM product_stock_pool WHERE product_id = ? AND account_email_number = ? AND account_password = ? AND is_sold = 0'
+    );
+    const insertStmt = db.prepare(`
+      INSERT INTO product_stock_pool (product_id, account_email_number, account_password, sim_type, esim_qrcode)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+
+    const tx = db.transaction(() => {
+      // Duplicate prevention: check if same account already exists
+      const exists = checkStmt.get(productId, data.account_email_number, data.account_password);
+      if (exists) {
+        return false;
+      }
+
+      insertStmt.run(
+        productId,
+        data.account_email_number,
+        data.account_password,
+        data.sim_type || 'SIM',
+        data.esim_qrcode || null
+      );
+
+      this.syncProductStockCount(productId);
+      return true;
+    });
+
+    return tx();
+  },
+
   syncProductStockCount(productId) {
     const count = db.prepare('SELECT COUNT(*) c FROM product_stock_pool WHERE product_id = ? AND is_sold = 0').get(productId).c;
     db.prepare('UPDATE products SET stock = ? WHERE id = ?').run(count, productId);
@@ -171,16 +203,35 @@ const StoreService = {
       return false;
     }
 
-    const content = items.map(i => i.content).join('\n');
     const itemIds = items.map(i => i.id);
+
+    // Build structured delivery content based on account type
+    let deliveredContent = '';
+    if (items[0].account_email_number) {
+      // Structured account data with credentials and SIM type
+      const contentLines = items.map(item => {
+        let line = `Email/Number: ${item.account_email_number}\nPassword: ${item.account_password}\nSIM Type: ${item.sim_type || 'SIM'}`;
+        
+        if (item.sim_type === 'eSIM' && item.esim_qrcode) {
+          line += `\neSIM QR Code: ${item.esim_qrcode}`;
+        }
+        
+        return line;
+      }).join('\n---\n');
+      
+      deliveredContent = contentLines;
+    } else {
+      // Legacy plain text content
+      deliveredContent = items.map(i => i.content).join('\n');
+    }
 
     // Mark items as sold
     const markSold = db.prepare("UPDATE product_stock_pool SET is_sold = 1, order_id = ?, sold_at = datetime('now') WHERE id = ?");
     for (const id of itemIds) markSold.run(orderId, id);
 
-    // Update order
+    // Update order with structured delivery info
     db.prepare("UPDATE orders SET delivered_content = ?, status = 'delivered', delivered_at = datetime('now'), updated_at = datetime('now') WHERE id = ?")
-      .run(content, orderId);
+      .run(deliveredContent, orderId);
 
     this.syncProductStockCount(order.product_id);
     return true;
@@ -203,8 +254,8 @@ const StoreService = {
   createOrder(data) {
     const info = db.prepare(`
       INSERT INTO orders
-      (order_number, email, telegram_username, telegram_id, product_id, product_name, quantity, unit_price, total, currency, payment_type, manual_method_id, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+      (order_number, email, telegram_username, telegram_id, product_id, product_name, quantity, unit_price, total, currency, payment_type, manual_method_id, sim_type_selected, delivery_address, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
     `).run(
       data.orderNumber,
       data.email,
@@ -217,7 +268,9 @@ const StoreService = {
       data.total,
       data.currency,
       data.paymentType,
-      data.manualMethodId
+      data.manualMethodId,
+      data.simTypeSelected || null,
+      data.deliveryAddress || null
     );
     return this.getOrder(info.lastInsertRowid);
   },

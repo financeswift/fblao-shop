@@ -415,15 +415,39 @@ router.post('/products/:id/stock/add', multer().single('csv_file'), (req, res) =
 
 // Add single stock item (from modal pop-up)
 router.post('/products/:id/stock/add-single', (req, res) => {
-  const content = String(req.body.content || '').trim();
+  const accountEmailNumber = String(req.body.account_email_number || '').trim();
+  const accountPassword = String(req.body.account_password || '').trim();
+  const simType = String(req.body.sim_type || 'SIM').trim();
+  const esimQrcodeBase64 = String(req.body.esim_qrcode_base64 || '').trim();
   
-  if (!content) {
-    flash(req, 'Please enter account details.', 'error');
+  if (!accountEmailNumber) {
+    flash(req, 'Please enter account email/number.', 'error');
+    return res.redirect(`/admin/products/${req.params.id}/stock`);
+  }
+  
+  if (!accountPassword) {
+    flash(req, 'Please enter account password.', 'error');
+    return res.redirect(`/admin/products/${req.params.id}/stock`);
+  }
+  
+  if (!['SIM', 'eSIM'].includes(simType)) {
+    flash(req, 'Please select a valid SIM type.', 'error');
     return res.redirect(`/admin/products/${req.params.id}/stock`);
   }
 
-  const added = StoreService.addStockToPool(req.params.id, [content]);
-  if (added > 0) {
+  if (simType === 'eSIM' && !esimQrcodeBase64) {
+    flash(req, 'eSIM requires a QR code.', 'error');
+    return res.redirect(`/admin/products/${req.params.id}/stock`);
+  }
+
+  const added = StoreService.addStructuredStockItem(req.params.id, {
+    account_email_number: accountEmailNumber,
+    account_password: accountPassword,
+    sim_type: simType,
+    esim_qrcode: simType === 'eSIM' ? esimQrcodeBase64 : null
+  });
+  
+  if (added) {
     flash(req, 'Stock item added successfully! (+1)');
   } else {
     flash(req, 'Item already exists in the pool.', 'warning');

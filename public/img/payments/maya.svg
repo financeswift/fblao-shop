@@ -1,6 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40">
-  <rect width="120" height="40" rx="10" fill="#065F46"/>
-  <circle cx="24" cy="20" r="10" fill="#FBBF24"/>
-  <path d="M18 24l4-8 4 8 4-8" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="44" y="26" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">Maya</text>
+  <defs>
+    <linearGradient id="mayaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#065F46;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#064E3B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="40" rx="4" fill="url(#mayaGrad)"/>
+  <circle cx="24" cy="20" r="7" fill="#FBBF24"/>
+  <path d="M24 14 L26 18 L22 18 Z M24 26 L26 22 L22 22 Z" fill="#065F46"/>
+  <text x="65" y="26" font-family="Arial, sans-serif" font-weight="800" font-size="12" fill="#FBBF24" text-anchor="start">Maya</text>
 </svg>

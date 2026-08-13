@@ -1,4 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40">
-  <rect width="120" height="40" rx="6" fill="#1a3a6e"/>
-  <text x="60" y="26" font-family="Arial,sans-serif" font-weight="800" font-size="14" fill="#fff" text-anchor="middle" letter-spacing="0.5">RCBC</text>
+  <defs>
+    <linearGradient id="rcbcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#C1272D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B1E26;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="40" rx="4" fill="url(#rcbcGrad)"/>
+  <circle cx="24" cy="20" r="6" fill="#ffffff" opacity="0.9"/>
+  <text x="60" y="27" font-family="Arial, sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">RCBC</text>
 </svg>

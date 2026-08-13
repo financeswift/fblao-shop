@@ -52,13 +52,24 @@ item3:pass"></textarea>
       <% } else { %>
         <table class="product-table" style="font-size: 13px;">
           <thead style="position: sticky; top: 0; z-index: 1;">
-            <tr><th>Content</th><th style="width: 40px;"></th></tr>
+            <% if (pool.some(item => item.account_email_number)) { %>
+              <tr><th>Email/Number</th><th>Type</th><th>Password</th><th style="width: 40px;"></th></tr>
+            <% } else { %>
+              <tr><th>Content</th><th style="width: 40px;"></th></tr>
+            <% } %>
           </thead>
           <tbody>
             <% pool.forEach(function(item){ %>
               <tr>
-                <td style="font-family:monospace; word-break: break-all;"><%= item.content %></td>
-                <td><button class="btn btn-sm" style="padding: 2px 6px;" onclick="copyVal('<%= item.content %>', 'Item', this)">Copy</button></td>
+                <% if (item.account_email_number) { %>
+                  <td style="font-family:monospace; word-break: break-all;"><%= item.account_email_number %></td>
+                  <td><span style="padding: 2px 6px; background: var(--accent-2); border-radius: 3px; font-size: 11px; font-weight: 600;"><%= item.sim_type || 'SIM' %></span></td>
+                  <td style="font-family:monospace; word-break: break-all;"><%= item.account_password %></td>
+                  <td><button class="btn btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="copyAccountDetails('<%= encodeURIComponent(item.account_email_number) %>', '<%= encodeURIComponent(item.account_password) %>', this)">Copy</button></td>
+                <% } else { %>
+                  <td style="font-family:monospace; word-break: break-all;"><%= item.content %></td>
+                  <td><button class="btn btn-sm" style="padding: 2px 6px;" onclick="copyVal('<%= item.content %>', 'Item', this)">Copy</button></td>
+                <% } %>
               </tr>
             <% }) %>
           </tbody>
@@ -97,20 +108,49 @@ item3:pass"></textarea>
 </div>
 
 <!-- Modal for adding single stock item -->
-<div id="addSingleStockModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-  <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-    <h2 style="margin-top: 0; margin-bottom: 20px;">Add Single Stock Item</h2>
-    <p class="muted" style="font-size: 13px; margin-bottom: 20px;">Enter the account details for this item. Each submission adds +1 to stock.</p>
+<div id="addSingleStockModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; overflow-y: auto; padding: 20px 0;">
+  <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin: auto;">
+    <h2 style="margin-top: 0; margin-bottom: 20px;">Add Single Account to Pool</h2>
+    <p class="muted" style="font-size: 13px; margin-bottom: 20px;">Fill in the account details for this item. Each submission adds +1 to stock.</p>
     
     <form id="singleStockForm" method="POST" action="/admin/products/<%= product.id %>/stock/add-single" style="display: flex; flex-direction: column; gap: 15px;">
+      
+      <!-- Account Email/Number -->
       <div>
-        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text);">Account / Item Content</label>
-        <input type="text" name="content" placeholder="e.g., username:password or account@email.com" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: monospace; font-size: 13px; background: var(--panel);" autofocus>
-        <span class="muted" style="font-size: 11px; margin-top: 5px; display: block;">Enter account details exactly as you would in bulk import.</span>
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text);">Account Email or Number</label>
+        <input type="text" name="account_email_number" placeholder="e.g., user@email.com or 09XXXXXXXXX" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--panel);">
+      </div>
+
+      <!-- Account Password -->
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text);">Account Password</label>
+        <input type="text" name="account_password" placeholder="Enter password" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--panel);">
+      </div>
+
+      <!-- SIM Type Selector -->
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text);">SIM Type</label>
+        <select name="sim_type" id="simTypeSelect" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--panel); cursor: pointer;">
+          <option value="">-- Select SIM Type --</option>
+          <option value="SIM">SIM Card (Physical - Requires Delivery Address at Checkout)</option>
+          <option value="eSIM">eSIM (Digital - QR Code Required)</option>
+        </select>
+      </div>
+
+      <!-- eSIM QR Code (Conditional) -->
+      <div id="esimQrCodeField" style="display: none;">
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text);">eSIM QR Code</label>
+        <p class="muted" style="font-size: 11px; margin-bottom: 10px;">Upload QR code image or paste base64 string</p>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+          <input type="file" name="esim_qrcode_file" id="esimQrcodeFile" accept="image/*" style="flex: 1; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; background: var(--panel);">
+          <button type="button" style="padding: 8px 15px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 12px;" onclick="document.getElementById('esimQrcodeFile').click()">Browse</button>
+        </div>
+        <textarea name="esim_qrcode_base64" id="esimQrcodeBase64" placeholder="Or paste base64 QR code here..." style="width: 100%; min-height: 60px; font-family: monospace; font-size: 11px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); resize: vertical;"></textarea>
+        <span class="muted" style="font-size: 11px; margin-top: 5px; display: block;">QR code will be shown to buyer upon delivery.</span>
       </div>
       
-      <div style="display: flex; gap: 10px; justify-content: flex-end;">
-        <button type="button" class="btn" style="background: var(--panel);" onclick="document.getElementById('addSingleStockModal').style.display='none'">Cancel</button>
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+        <button type="button" class="btn" style="background: var(--panel);" onclick="closeAddStockModal()">Cancel</button>
         <button type="submit" class="btn btn-primary">Add Item (+1)</button>
       </div>
     </form>
@@ -136,15 +176,85 @@ function copyVal(val, label, btn) {
   }
 }
 
-// Close modal when clicking outside
-document.getElementById('addSingleStockModal').addEventListener('click', function(e) {
-  if (e.target === this) {
-    this.style.display = 'none';
+function copyAccountDetails(email, password, btn) {
+  const email_decoded = decodeURIComponent(email);
+  const password_decoded = decodeURIComponent(password);
+  const text = `Email/Number: ${email_decoded}\nPassword: ${password_decoded}`;
+  
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      const oldText = btn.innerText;
+      btn.innerText = 'Copied!';
+      btn.style.color = 'var(--green)';
+      setTimeout(() => {
+        btn.innerText = oldText;
+        btn.style.color = '';
+      }, 1500);
+    });
+  } else {
+    alert('Clipboard not supported');
+  }
+}
+
+function closeAddStockModal() {
+  document.getElementById('addSingleStockModal').style.display = 'none';
+}
+
+// Handle SIM type change - show/hide eSIM QR code field
+document.getElementById('simTypeSelect').addEventListener('change', function() {
+  const esimField = document.getElementById('esimQrCodeField');
+  const esimQrcodeBase64 = document.getElementById('esimQrcodeBase64');
+  
+  if (this.value === 'eSIM') {
+    esimField.style.display = 'block';
+    esimQrcodeBase64.setAttribute('required', 'required');
+  } else {
+    esimField.style.display = 'none';
+    esimQrcodeBase64.removeAttribute('required');
+    esimQrcodeBase64.value = '';
+    document.getElementById('esimQrcodeFile').value = '';
   }
 });
 
-// Close modal on form submission
+// Handle file upload for eSIM QR code
+document.getElementById('esimQrcodeFile').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const base64 = event.target.result.split(',')[1] || event.target.result;
+      document.getElementById('esimQrcodeBase64').value = base64;
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// Close modal when clicking outside
+document.getElementById('addSingleStockModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeAddStockModal();
+  }
+});
+
+// Form validation and submission
 document.getElementById('singleStockForm').addEventListener('submit', function(e) {
-  // Form will submit normally, so modal will close on redirect
+  const simType = document.getElementById('simTypeSelect').value;
+  
+  if (!simType) {
+    e.preventDefault();
+    alert('Please select a SIM type');
+    return false;
+  }
+  
+  if (simType === 'eSIM') {
+    const qrcodeBase64 = document.getElementById('esimQrcodeBase64').value.trim();
+    if (!qrcodeBase64) {
+      e.preventDefault();
+      alert('Please provide an eSIM QR code (upload image or paste base64)');
+      return false;
+    }
+  }
+  
+  // Form will submit normally
 });
 </script>

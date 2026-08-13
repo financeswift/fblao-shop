@@ -707,9 +707,26 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .admin-side a.active { border-bottom-color: var(--accent); }
 }
 
+@media (max-width: 960px) {
+  .pay-method-btn {
+    padding: 14px 12px;
+  }
+  .pay-method-logo {
+    height: 32px;
+    min-width: 60px;
+    max-width: 100px;
+  }
+  .catalog-filter-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 760px) {
   .store-hero {
-    padding: 22px 18px;
+    padding: 18px 16px;
+  }
+  .store-hero h1 {
+    font-size: clamp(24px, 5vw, 32px);
   }
   .user-account-page > .card > div:first-child {
     flex-direction: column;
@@ -719,7 +736,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .swiftpay-hero { flex-direction: column; }
   .swiftpay-layout { grid-template-columns: 1fr; }
   .field-row { flex-direction: column; gap: 0; }
-  .admin-main { padding: 20px; }
+  .admin-main { padding: 16px; }
   .modal-overlay {
     align-items: flex-end;
     padding: 0;
@@ -731,10 +748,299 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
     border-bottom-right-radius: 0;
     border-radius: 20px 20px 0 0;
     transform: translateY(100%);
+    width: 100%;
+    max-width: none;
   }
   .modal-overlay.is-open .modal {
     transform: translateY(0) scale(1);
   }
+  .modal-title {
+    font-size: 18px;
+    padding-right: 30px;
+  }
   .horse-tagline { font-size: 18px; }
-  .payment-methods { gap: 8px; }
+  .payment-methods { gap: 6px; }
+  .product-table {
+    font-size: 13px;
+  }
+  .product-table th, .product-table td {
+    padding: 10px 12px;
+  }
+  .btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .btn-sm {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 36px;
+  }
+  .pay-method-btn {
+    padding: 12px 10px;
+    font-size: 13px;
+    min-height: 48px;
+    gap: 10px;
+  }
+  .pay-method-logo {
+    height: 28px;
+    min-width: 56px;
+    max-width: 92px;
+    padding: 3px 8px;
+  }
+  .pay-method-info strong {
+    font-size: 13px;
+  }
+  .pay-method-info small {
+    font-size: 11px;
+  }
+  .catalog-filter-grid {
+    grid-template-columns: 1fr;
+  }
+  .catalog-filters-header .btn {
+    width: 100%;
+  }
+  .kv th {
+    width: 100px;
+    padding: 8px 0 8px 0;
+  }
+  .kv td {
+    padding: 8px 0;
+  }
+  .col-price, .col-stock, .col-buy {
+    white-space: normal;
+  }
+  .status-pill {
+    font-size: 10px;
+    padding: 3px 10px;
+  }
+  .delivery {
+    padding: 12px;
+  }
+  .delivery h3 {
+    font-size: 14px;
+  }
+  .delivery-body {
+    font-size: 11px;
+    padding: 10px;
+  }
+  .p-name {
+    font-size: 13px;
+  }
+  .p-desc {
+    font-size: 12px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 18px 12px 50px;
+  }
+  .header-inner {
+    padding: 12px 12px;
+  }
+  .brand {
+    font-size: 16px;
+    gap: 8px;
+  }
+  .main-nav {
+    width: 250px;
+    padding: 70px 16px 40px;
+  }
+  .card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .card.narrow {
+    width: 100%;
+    margin: 0;
+  }
+  .modal-title {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .modal-close {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+  .subpanel {
+    padding: 14px;
+    border-radius: 10px;
+  }
+  .instructions, .delivery {
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .instructions h3, .delivery h3 {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  .ref-note {
+    font-size: 12px;
+  }
+  input[type=text], input[type=email], input[type=number], input[type=password], textarea, select {
+    padding: 10px 10px;
+    font-size: 16px;
+  }
+  textarea {
+    min-height: 70px;
+  }
+  .field > span {
+    font-size: 12px;
+  }
+  .field-row {
+    gap: 0;
+  }
+  .pay-method-btn {
+    flex-direction: column;
+    text-align: center;
+    min-height: 52px;
+    padding: 12px 10px;
+  }
+  .pay-method-logo {
+    height: 26px;
+    min-width: 52px;
+    max-width: 88px;
+  }
+  .pay-method-arrow {
+    display: none;
+  }
+  .pay-method-info {
+    width: 100%;
+  }
+  .pay-method-info strong {
+    font-size: 12px;
+  }
+  .pay-method-info small {
+    font-size: 10px;
+  }
+  .readout {
+    font-size: 14px;
+    padding: 10px;
+  }
+  .readout.total {
+    font-size: 16px;
+  }
+  .btn-block {
+    padding: 12px;
+    font-size: 15px;
+    min-height: 48px;
+  }
+  .hero-chip {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  .category-title {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+  .table-wrap {
+    border-radius: 10px;
+  }
+  .product-table th, .product-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .p-name {
+    font-size: 12px;
+  }
+  .col-name {
+    min-width: 140px;
+  }
+  .banner {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+  .site-footer {
+    padding: 24px 0;
+    font-size: 12px;
+  }
+  .field-row .field {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 14px 10px 48px;
+  }
+  .brand {
+    font-size: 14px;
+  }
+  .card {
+    padding: 14px;
+  }
+  .modal {
+    padding: 18px 14px 28px;
+    border-radius: 16px 16px 0 0;
+  }
+  .modal-title {
+    font-size: 15px;
+    margin-bottom: 14px;
+  }
+  .hero-chip {
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+  .catalog-filters {
+    padding: 14px 14px;
+  }
+  .catalog-filters-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .catalog-filters-header h2 {
+    font-size: 16px;
+  }
+  .catalog-filters-header p {
+    font-size: 12px;
+  }
+  .product-table {
+    font-size: 11px;
+  }
+  .product-table th, .product-table td {
+    padding: 7px 8px;
+  }
+  .col-name {
+    min-width: 100px;
+  }
+  .p-name {
+    font-size: 11px;
+  }
+  .p-desc {
+    font-size: 10px;
+  }
+  .col-price {
+    font-size: 12px;
+  }
+  .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+  .btn-sm {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  .pay-method-btn {
+    padding: 10px 8px;
+    font-size: 12px;
+    min-height: 50px;
+  }
+  .readout {
+    font-size: 13px;
+  }
+  .kv {
+    font-size: 12px;
+  }
+  .kv th {
+    font-size: 11px;
+  }
+  .stock-ok, .stock-out {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
 }

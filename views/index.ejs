@@ -158,6 +158,27 @@
         </div>
       </div>
 
+      <!-- SIM Type Selector (if product has SIM/eSIM accounts) -->
+      <div id="simTypeSection" style="display: none;">
+        <label class="field">
+          <span>Delivery Type / 配送类型</span>
+          <select name="sim_type_selected" id="m-sim-type" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--panel);" required>
+            <option value="">-- Choose SIM Type --</option>
+            <option value="SIM">SIM Card (Requires Delivery Address / 需要填地址)</option>
+            <option value="eSIM">eSIM (Digital Instant / 数字即时)</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- Delivery Address (shown only when SIM type is selected as "SIM") -->
+      <div id="deliveryAddressSection" style="display: none;">
+        <label class="field">
+          <span>Delivery Address / 收货地址</span>
+          <textarea name="delivery_address" id="m-delivery-address" style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--panel); font-family: system-ui, -apple-system, sans-serif; resize: vertical;" placeholder="Full address for SIM card delivery / 完整收货地址"></textarea>
+          <small class="muted">Your physical address where the SIM card will be delivered. / 收卡地址</small>
+        </label>
+      </div>
+
       <!-- Payment method picker -->
       <div class="pay-method-picker">
         <p class="pay-method-picker-label">Choose payment method / 选择支付方式</p>

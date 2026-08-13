@@ -179,6 +179,17 @@ try { db.exec("ALTER TABLE products ADD COLUMN updated_at TEXT DEFAULT (datetime
 try { db.exec("ALTER TABLE manual_payment_methods ADD COLUMN icon_url TEXT"); } catch(e){}
 try { db.exec("CREATE INDEX IF NOT EXISTS idx_products_deleted ON products(deleted_at)"); } catch(e){}
 try { db.exec("CREATE INDEX IF NOT EXISTS idx_categories_deleted ON categories(deleted_at)"); } catch(e){}
+
+// Migrations for structured account data in stock pool
+try { db.exec("ALTER TABLE product_stock_pool ADD COLUMN account_email_number TEXT"); } catch(e){}
+try { db.exec("ALTER TABLE product_stock_pool ADD COLUMN account_password TEXT"); } catch(e){}
+try { db.exec("ALTER TABLE product_stock_pool ADD COLUMN sim_type TEXT DEFAULT 'SIM'"); } catch(e){}
+try { db.exec("ALTER TABLE product_stock_pool ADD COLUMN esim_qrcode TEXT"); } catch(e){}
+
+// Migrations for order delivery info and SIM type tracking
+try { db.exec("ALTER TABLE orders ADD COLUMN delivery_address TEXT"); } catch(e){}
+try { db.exec("ALTER TABLE orders ADD COLUMN sim_type_selected TEXT"); } catch(e){}
+
 // email is already nullable in the CREATE TABLE statement above.
 // SQLite doesn't support ALTER COLUMN, so we skip this migration.
 
@@ -336,20 +347,53 @@ function seed() {
     'INSERT INTO products (category_id, name, description, price, stock, active, sort_order, auto_deliver) VALUES (?, ?, ?, ?, ?, ?, ?, 1)'
   );
 
-  const catBanks = insCat.run('Verified Bank Accounts', 1).lastInsertRowid;
-  insProd.run(catBanks, 'BPI', 'Verified digital account.', 1500, 34, 1, 1);
-  insProd.run(catBanks, 'CIMB', 'Verified digital account.', 1500, 0, 1, 2);
-  insProd.run(catBanks, 'COINS PH CORPORATE', 'Verified digital account.', 20000, 0, 1, 3);
-  insProd.run(catBanks, 'GCASH 100K', 'Verified digital account.', 1000, 0, 1, 4);
-  insProd.run(catBanks, 'GCASH 500K', 'Verified digital account.', 3000, 1, 1, 5);
-  insProd.run(catBanks, 'GOTYME', 'Verified digital account.', 1500, 5, 1, 6);
-  insProd.run(catBanks, 'MAYA BUSINESS NEGOSYANTE', 'Verified digital account.', 900, 65, 1, 7);
-  insProd.run(catBanks, 'NEW MAYA BUSINESS', 'Verified digital account.', 900, 15, 1, 8);
-  insProd.run(catBanks, 'PAYMAYA 5M', 'Verified digital account.', 15000, 2, 1, 9);
-  insProd.run(catBanks, 'PAYMAYA 500K', 'Verified digital account.', 900, 56, 1, 10);
-  insProd.run(catBanks, 'POS', 'Verified digital account.', 80000, 3, 1, 11);
-  insProd.run(catBanks, 'RCBC', 'Verified digital account.', 1500, 10, 1, 12);
-  insProd.run(catBanks, 'UNION BANK NEGOSYANTE', 'Verified digital account.', 20000, 5, 1, 13);
+  // Add default payment categories
+  const checkCat = db.prepare('SELECT id FROM categories WHERE name = ? LIMIT 1');
+  
+  let catBanks = checkCat.get('Banks')?.id;
+  if (!catBanks) {
+    catBanks = insCat.run('Banks', 1).lastInsertRowid;
+  }
+  
+  let catEwallet = checkCat.get('E-wallet')?.id;
+  if (!catEwallet) {
+    catEwallet = insCat.run('E-wallet', 2).lastInsertRowid;
+  }
+  
+  let catPhilipCardCode = checkCat.get('Philippine Payment Code')?.id;
+  if (!catPhilipCardCode) {
+    catPhilipCardCode = insCat.run('Philippine Payment Code', 3).lastInsertRowid;
+  }
+  
+  let catIntlPaymentCode = checkCat.get('International Payment Code')?.id;
+  if (!catIntlPaymentCode) {
+    catIntlPaymentCode = insCat.run('International Payment Code', 4).lastInsertRowid;
+  }
+  
+  let catPOSMachines = checkCat.get('Payment POS Machines')?.id;
+  if (!catPOSMachines) {
+    catPOSMachines = insCat.run('Payment POS Machines', 5).lastInsertRowid;
+  }
+
+  // Old category for backward compatibility
+  let catBankAccounts = checkCat.get('Verified Bank Accounts')?.id;
+  if (!catBankAccounts) {
+    catBankAccounts = insCat.run('Verified Bank Accounts', 6).lastInsertRowid;
+  }
+  
+  insProd.run(catBankAccounts, 'BPI', 'Verified digital account.', 1500, 34, 1, 1);
+  insProd.run(catBankAccounts, 'CIMB', 'Verified digital account.', 1500, 0, 1, 2);
+  insProd.run(catBankAccounts, 'COINS PH CORPORATE', 'Verified digital account.', 20000, 0, 1, 3);
+  insProd.run(catBankAccounts, 'GCASH 100K', 'Verified digital account.', 1000, 0, 1, 4);
+  insProd.run(catBankAccounts, 'GCASH 500K', 'Verified digital account.', 3000, 1, 1, 5);
+  insProd.run(catBankAccounts, 'GOTYME', 'Verified digital account.', 1500, 5, 1, 6);
+  insProd.run(catBankAccounts, 'MAYA BUSINESS NEGOSYANTE', 'Verified digital account.', 900, 65, 1, 7);
+  insProd.run(catBankAccounts, 'NEW MAYA BUSINESS', 'Verified digital account.', 900, 15, 1, 8);
+  insProd.run(catBankAccounts, 'PAYMAYA 5M', 'Verified digital account.', 15000, 2, 1, 9);
+  insProd.run(catBankAccounts, 'PAYMAYA 500K', 'Verified digital account.', 900, 56, 1, 10);
+  insProd.run(catBankAccounts, 'POS', 'Verified digital account.', 80000, 3, 1, 11);
+  insProd.run(catBankAccounts, 'RCBC', 'Verified digital account.', 1500, 10, 1, 12);
+  insProd.run(catBankAccounts, 'UNION BANK NEGOSYANTE', 'Verified digital account.', 20000, 5, 1, 13);
 
   setSetting('seeded', '1');
 }
