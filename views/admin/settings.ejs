@@ -5,6 +5,7 @@
   <div class="subpanel">
     <h2>Shop</h2>
     <form method="POST" action="/admin/settings">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label class="field"><span>Shop name</span><input type="text" name="shop_name" value="<%= escapeHtml(s.shop_name) %>"></label>
       <label class="field"><span>Tagline</span><input type="text" name="shop_tagline" value="<%= escapeHtml(s.shop_tagline) %>"></label>
       <label class="field"><span>Currency code</span><input type="text" name="currency" value="<%= escapeHtml(s.currency) %>"></label>
@@ -14,6 +15,7 @@
     <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
 
     <form method="POST" action="/admin/settings/logo" enctype="multipart/form-data">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label class="field">
         <span>Shop Logo</span>
         <div style="display:flex; align-items:center; gap: 15px; margin-top: 10px;">
@@ -29,6 +31,7 @@
   <div class="subpanel">
     <h2>Admin password</h2>
     <form method="POST" action="/admin/settings/password">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label class="field"><span>Current password</span><input type="password" name="current_password" required></label>
       <label class="field"><span>New password</span><input type="password" name="new_password" required></label>
       <button class="btn btn-primary" type="submit">Change password</button>
@@ -51,6 +54,7 @@
       <a href="/admin/settings/db-download" class="btn btn-sm" style="background:#eee;color:#333;">Download shop.db Backup</a>
 
       <form method="POST" action="/admin/settings/db-restore" enctype="multipart/form-data" onsubmit="return confirm('WARNING: This will overwrite your entire database. Proceed?');" style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 5px;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <label class="field">
           <span style="color: var(--red); font-weight: bold;">Restore Database (.db file)</span>
           <input type="file" name="db_file" accept=".db" required style="margin-top:5px;">
@@ -70,6 +74,7 @@
   <div class="subpanel">
     <h2>Cloudflare (Security & Verification)</h2>
     <form method="POST" action="/admin/settings/cloudflare">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label class="field">
         <span>Cloudflare Site Verification Token</span>
         <input type="text" name="cf_site_verification" value="<%= escapeHtml(s.cf_site_verification) %>" placeholder="cloudflare-site-verification=...">
@@ -91,6 +96,7 @@
     <h2>Maya Checkout (online card payment)</h2>
     <p class="muted">Get keys from your Maya Business dashboard. Use <strong>sandbox</strong> keys for testing.</p>
     <form method="POST" action="/admin/settings/maya">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field-row">
         <label class="field" style="flex:0 0 130px;"><span>Enabled</span><input type="checkbox" name="maya_enabled" <%= s.maya_enabled === '1' ? 'checked' : '' %>></label>
         <label class="field"><span>Mode</span>
@@ -113,6 +119,7 @@
     <h2>Coins.ph Enterprise (crypto/wallet)</h2>
     <p class="muted">Get keys from your Coins.ph Business Portal. Use <strong>sandbox</strong> for testing.</p>
     <form method="POST" action="/admin/settings/coins">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field-row">
         <label class="field" style="flex:0 0 130px;"><span>Enabled</span><input type="checkbox" name="coins_enabled" <%= s.coins_enabled === '1' ? 'checked' : '' %>></label>
         <label class="field"><span>Mode</span>
@@ -135,6 +142,7 @@
     <h2>PayMongo (Cards, GCash, Maya)</h2>
     <p class="muted">Enter your Secret Key from PayMongo Dashboard.</p>
     <form method="POST" action="/admin/settings/paymongo">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label class="field" style="flex:0 0 130px;"><span>Enabled</span><input type="checkbox" name="paymongo_enabled" <%= s.paymongo_enabled === '1' ? 'checked' : '' %>></label>
       <label class="field"><span>Secret Key (sk_...)</span><input type="text" name="paymongo_secret_key" value="<%= escapeHtml(s.paymongo_secret_key) %>"></label>
       <label class="field"><span>Webhook Secret (whsec_...)</span><input type="text" name="paymongo_webhook_secret" value="<%= escapeHtml(s.paymongo_webhook_secret) %>"></label>
@@ -149,6 +157,7 @@
     <h2>Xendit (Invoices & PH/ID Payments)</h2>
     <p class="muted">Enter your Secret Key from Xendit Dashboard.</p>
     <form method="POST" action="/admin/settings/xendit">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label class="field" style="flex:0 0 130px;"><span>Enabled</span><input type="checkbox" name="xendit_enabled" <%= s.xendit_enabled === '1' ? 'checked' : '' %>></label>
       <label class="field"><span>Secret Key (xnd_...)</span><input type="text" name="xendit_secret_key" value="<%= escapeHtml(s.xendit_secret_key) %>"></label>
       <label class="field"><span>Callback Verification Token</span><input type="text" name="xendit_callback_token" value="<%= escapeHtml(s.xendit_callback_token) %>"></label>
@@ -168,6 +177,7 @@
       </div>
     </div>
     <form method="POST" action="/admin/settings/swiftpay">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field-row">
         <label class="field" style="flex:0 0 130px;"><span>Enabled</span><input type="checkbox" name="swiftpay_enabled" <%= s.swiftpay_enabled === '1' ? 'checked' : '' %>></label>
         <label class="field"><span>Mode</span>
@@ -203,6 +213,7 @@
     <h2>Magpie (Alipay / WeChat Pay)</h2>
     <p class="muted">Enable Magpie for Alipay and WeChat Pay. The app will auto-convert your order amount into the target currency before creating the checkout.</p>
     <form method="POST" action="/admin/settings/magpie">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field-row">
         <label class="field" style="flex:0 0 130px;"><span>Enabled</span><input type="checkbox" name="magpie_enabled" <%= s.magpie_enabled === '1' ? 'checked' : '' %>></label>
         <label class="field"><span>Mode</span>
