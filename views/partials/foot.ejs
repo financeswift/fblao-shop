@@ -29,9 +29,6 @@
         <% if (xenditEnabled) { %>
           <img class="payment-icon" src="<%= getIcon('xendit') %>" alt="Xendit">
         <% } %>
-        <% if (swiftpayEnabled) { %>
-          <img class="payment-icon" src="<%= getIcon('swiftpay') %>" alt="Swiftpay PH">
-        <% } %>
         <% if (magpieEnabled) { %>
           <img class="payment-icon" src="<%= getIcon('alipay') %>" alt="Alipay">
           <img class="payment-icon" src="<%= getIcon('wechat') %>" alt="WeChat Pay">
@@ -44,6 +41,29 @@
         <% }) %>
       </div>
     </div>
+
+    <!-- Philippine Banks (via SwiftPay) -->
+    <% if (swiftpayEnabled) { %>
+    <div class="footer-icon-group">
+      <span class="footer-icon-label">Philippine Banks</span>
+      <div class="payment-methods">
+        <img class="payment-icon" src="<%= getIcon('bpi') %>" alt="BPI" title="Bank of the Philippine Islands">
+        <img class="payment-icon" src="<%= getIcon('unionbank') %>" alt="UnionBank" title="Union Bank of the Philippines">
+        <img class="payment-icon" src="<%= getIcon('rcbc') %>" alt="RCBC" title="Rizal Commercial Banking Corporation">
+        <img class="payment-icon" src="<%= getIcon('pnb') %>" alt="PNB" title="Philippine National Bank">
+      </div>
+    </div>
+    <% } %>
+
+    <!-- SwiftPay & Other Gateways -->
+    <% if (swiftpayEnabled) { %>
+    <div class="footer-icon-group">
+      <span class="footer-icon-label">Other Methods</span>
+      <div class="payment-methods">
+        <img class="payment-icon" src="<%= getIcon('swiftpay') %>" alt="SwiftPay PH" title="SwiftPay QR Ph (InstaPay/PESONet)">
+      </div>
+    </div>
+    <% } %>
 
     <p>&copy; <%= shopName %>. All accounts are for authorized use only.</p>
     <p>Current Time (PH): <span id="live-clock" style="color: var(--accent); font-weight: bold; font-family: ui-monospace, monospace;"><%= date(new Date().toISOString()) %></span></p>

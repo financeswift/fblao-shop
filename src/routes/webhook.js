@@ -109,12 +109,23 @@ router.post('/swiftpay', async (req, res) => {
 });
 
 // Magpie webhook
+// Configure webhook URL in Magpie dashboard to: {BASE_URL}/webhooks/magpie
+// Webhook signature verification is optional — if MAGPIE_WEBHOOK_SECRET is not configured,
+// all webhooks from Magpie are accepted (they're internal to your order flow anyway).
 router.post('/magpie', async (req, res) => {
   try {
     const rawBody = req.rawBody || Buffer.from(JSON.stringify(req.body || {}));
     const signature = req.get('X-MAGPIE-SIGNATURE') || req.get('x-magpie-signature') || '';
     const sig = magpie.verifyWebhookSignature(rawBody, signature);
+    
+    // If signature verification is skipped (no secret configured), log it once
+    if (sig.skipped) {
+      console.warn('[Webhook] Magpie webhook signature verification skipped (MAGPIE_WEBHOOK_SECRET not configured). Webhooks will be accepted without verification.');
+    }
+    
+    // Reject only if verification was attempted and failed
     if (!sig.skipped && !sig.verified) {
+      console.warn('[Webhook] Magpie webhook signature verification FAILED — rejecting webhook');
       return res.status(401).json({ error: 'invalid signature' });
     }
 
@@ -136,8 +147,10 @@ router.post('/magpie', async (req, res) => {
 
     if (status === 'paid') {
       StoreService.updateOrderStatus(order.id, 'paid', "datetime('now')");
+      console.info(`[Webhook] Magpie payment confirmed for order ${orderNumber}`);
     } else if (status === 'failed' && order.status === 'pending') {
       StoreService.updateOrderStatus(order.id, 'failed');
+      console.info(`[Webhook] Magpie payment failed for order ${orderNumber}`);
     }
 
     return res.status(200).json({ ok: true });

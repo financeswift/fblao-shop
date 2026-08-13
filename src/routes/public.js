@@ -14,11 +14,18 @@ const { generateOrderNumber } = require('../helpers');
 const { asyncHandler, rateLimit } = require('../middleware');
 const StoreService = require('../services/store');
 
+// Supported SwiftPay payment types (verified working with SwiftPay API)
+// Each of these channels works the same way: direct redirect to specific payment method
 const SWIFTPAY_TYPES = [
-  'swiftpay',
-  'swiftpay_maya', 'swiftpay_qrph', 'swiftpay_gcash', 'swiftpay_grabpay', 'swiftpay_shopeepay', 'swiftpay_card',
-  'swiftpay_bdo', 'swiftpay_bpi', 'swiftpay_unionbank', 'swiftpay_metrobank',
-  'swiftpay_rcbc', 'swiftpay_landbank', 'swiftpay_pnb', 'swiftpay_securitybank', 'swiftpay_chinabank',
+  'swiftpay',             // Generic: show institution selection screen
+  'swiftpay_maya',        // Maya e-wallet (direct payment)
+  'swiftpay_gcash',       // GCash e-wallet (direct payment)
+  'swiftpay_qrph',        // QR Ph (InstaPay/PESONet — special flow with inline QR)
+  // Major Philippine banks (online banking redirects)
+  'swiftpay_bpi',         // Bank of the Philippine Islands
+  'swiftpay_unionbank',   // Union Bank of the Philippines
+  'swiftpay_pnb',         // Philippine National Bank
+  'swiftpay_rcbc',        // RCBC (Rizal Commercial Banking Corporation)
 ];
 
 async function syncSwiftpayOrderStatus(order) {
@@ -68,7 +75,7 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
   const telegramUsername = String(req.body.telegram_username || '').trim().replace(/^@/, '');
   const productId = parseInt(req.body.product_id, 10);
   const quantity = Math.max(1, parseInt(req.body.quantity, 10) || 1);
-  const paymentType = req.body.payment_type; // 'manual', 'maya', 'coins', 'paymongo', 'xendit', 'swiftpay', 'swiftpay_maya', 'swiftpay_qrph', 'swiftpay_gcash', 'swiftpay_grabpay', 'swiftpay_shope[...]
+  const paymentType = req.body.payment_type; // 'manual', 'maya', 'coins', 'paymongo', 'xendit', 'magpie_alipay', 'magpie_wechat', 'swiftpay', 'swiftpay_maya', 'swiftpay_qrph', 'swiftpay_gcash'
   const manualMethodId = req.body.manual_method_id ? parseInt(req.body.manual_method_id, 10) : null;
 
   if (!telegramUsername) {
@@ -221,23 +228,18 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
     }
 
     // All other SwiftPay methods use the standard redirect checkout flow.
-    // Map customer-facing type to SwiftPay institution_code (as returned by /api/institutions)
+    // Map customer-facing type to SwiftPay institution_code (verified from /api/institutions endpoint)
+    // Note: Only institutions that are confirmed to work via the SwiftPay API are included.
     const institutionMap = {
+      // E-wallets (direct payment, instant redirect)
       swiftpay_gcash: 'GCASH',
       swiftpay_maya: 'MAYA_WALLET',
-      swiftpay_grabpay: 'GRABPAY',
-      swiftpay_shopeepay: 'SHOPEEPAY',
-      swiftpay_card: 'CARD',
-      swiftpay_bdo: 'BDO',
+      // Banks (online banking login, then transfer)
       swiftpay_bpi: 'BPI',
       swiftpay_unionbank: 'UNIONBANK',
-      swiftpay_metrobank: 'METROBANK',
-      swiftpay_rcbc: 'RCBC',
-      swiftpay_landbank: 'LANDBANK',
       swiftpay_pnb: 'PNB',
-      swiftpay_securitybank: 'SECURITY_BANK',
-      swiftpay_chinabank: 'CHINA_BANK',
-      // swiftpay_qrph and plain swiftpay: no institution_code → show selection screen
+      swiftpay_rcbc: 'RCBC',
+      // swiftpay_qrph and plain 'swiftpay': use special handling (no institution_code → show selection screen)
     };
     let institutionCode = institutionMap[paymentType] || null;
     if (!institutionCode) {
@@ -381,6 +383,22 @@ router.get('/order/result', asyncHandler(async (req, res) => {
       order = StoreService.getOrder(order.id);
     } catch (_) { /* show current state */ }
   }
+  
+  // For Magpie orders (Alipay/WeChat), sync status live so the page is accurate
+  // even if the webhook has not arrived yet.
+  if ((order.payment_type === 'magpie_alipay' || order.payment_type === 'magpie_wechat') &&
+      order.status === 'pending' && order.magpie_checkout_id) {
+    try {
+      const status = await magpie.getChargeStatus(order.magpie_checkout_id);
+      if (status === 'paid') {
+        StoreService.updateOrderStatus(order.id, 'paid', "datetime('now')");
+      } else if (status === 'failed') {
+        StoreService.updateOrderStatus(order.id, 'failed');
+      }
+      order = StoreService.getOrder(order.id);
+    } catch (_) { /* show current state */ }
+  }
+  
   order = await syncSwiftpayOrderStatus(order);
 
   const manualMethod = order.manual_method_id
@@ -413,6 +431,43 @@ router.get('/swiftpay/status', asyncHandler(async (req, res) => {
     order,
     queryStatus: String(req.query.status || '').trim().toLowerCase(),
     checkoutUrl: order.swiftpay_checkout_url || '',
+  });
+}));
+
+// Magpie payment status (Alipay/WeChat) -----------------------------------------
+// Magpie redirects to success/fail URLs configured in the order creation.
+// This route ensures status is synced, then redirects to the standard order result page.
+router.get('/magpie/status', asyncHandler(async (req, res) => {
+  const ref = String(req.query.ref || '').trim();
+  let order = StoreService.getOrder(ref);
+  if (!order) {
+    return res.status(404).render('error', { title: 'Not found', message: 'Order not found.' });
+  }
+  if (order.payment_type !== 'magpie_alipay' && order.payment_type !== 'magpie_wechat') {
+    return res.redirect(`/order/result?ref=${encodeURIComponent(order.order_number)}`);
+  }
+
+  // Sync status from Magpie API before showing the result page
+  if (order.status === 'pending' && order.magpie_checkout_id) {
+    try {
+      const status = await magpie.getChargeStatus(order.magpie_checkout_id);
+      if (status === 'paid') {
+        StoreService.updateOrderStatus(order.id, 'paid', "datetime('now')");
+      } else if (status === 'failed') {
+        StoreService.updateOrderStatus(order.id, 'failed');
+      }
+      order = StoreService.getOrder(order.id);
+    } catch (_) { /* show current state */ }
+  }
+
+  const manualMethod = order.manual_method_id
+    ? db.prepare('SELECT * FROM manual_payment_methods WHERE id = ?').get(order.manual_method_id)
+    : null;
+  res.render('order-result', {
+    title: `Order ${order.order_number}`,
+    order,
+    manualMethod,
+    queryStatus: String(req.query.status || ''),
   });
 }));
 

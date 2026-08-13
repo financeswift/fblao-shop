@@ -163,6 +163,7 @@
         <p class="pay-method-picker-label">Choose payment method / 选择支付方式</p>
 
         <% if (swiftpayEnabled) { %>
+          <%# SwiftPay e-Wallet Methods (Direct payment, similar to how Maya works) %>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_maya">
             <img class="pay-method-logo" src="<%= getIcon('maya') %>" alt="Maya">
             <span class="pay-method-info">
@@ -179,22 +180,7 @@
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_grabpay">
-            <img class="pay-method-logo" src="/static/img/payments/grabpay.svg" alt="GrabPay">
-            <span class="pay-method-info">
-              <strong>GrabPay</strong>
-              <small>Pay with GrabPay / 用 GrabPay 支付</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_shopeepay">
-            <img class="pay-method-logo" src="/static/img/payments/shopeepay.svg" alt="ShopeePay">
-            <span class="pay-method-info">
-              <strong>ShopeePay</strong>
-              <small>Pay with ShopeePay / 用 ShopeePay 支付</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
+          <%# QR Ph (InstaPay / PESONet) — shows QR code inline, user scans to complete payment %>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_qrph">
             <span class="pay-method-icon-wrap">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h.01M14 17h.01M17 14h.01M17 17h4v4h-4z"></path></svg>
@@ -205,86 +191,47 @@
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_card">
-            <span class="pay-method-icon-wrap">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-            </span>
-            <span class="pay-method-info">
-              <strong>Card</strong>
-              <small>Visa / Mastercard credit or debit</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <%# Bank transfers via SwiftPay %>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_bdo">
-            <img class="pay-method-logo" src="/static/img/payments/bdo.svg" alt="BDO">
-            <span class="pay-method-info">
-              <strong>BDO</strong>
-              <small>Banco de Oro online banking</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
+          
+          <%# Philippine Banks — Online banking login & transfer (work same as Maya) %>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_bpi">
-            <img class="pay-method-logo" src="/static/img/payments/bpi.svg" alt="BPI">
+            <img class="pay-method-logo" src="<%= getIcon('bpi') %>" alt="BPI">
             <span class="pay-method-info">
               <strong>BPI</strong>
-              <small>Bank of the Philippine Islands online banking</small>
+              <small>Bank of the Philippine Islands / BPI Online</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_unionbank">
-            <img class="pay-method-logo" src="/static/img/payments/unionbank.svg" alt="UnionBank">
+            <img class="pay-method-logo" src="<%= getIcon('unionbank') %>" alt="UnionBank">
             <span class="pay-method-info">
               <strong>UnionBank</strong>
-              <small>UnionBank online banking</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_metrobank">
-            <img class="pay-method-logo" src="/static/img/payments/metrobank.svg" alt="Metrobank">
-            <span class="pay-method-info">
-              <strong>Metrobank</strong>
-              <small>Metrobank online banking</small>
+              <small>Union Bank of the Philippines / UB Online</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_rcbc">
-            <img class="pay-method-logo" src="/static/img/payments/rcbc.svg" alt="RCBC">
+            <img class="pay-method-logo" src="<%= getIcon('rcbc') %>" alt="RCBC">
             <span class="pay-method-info">
               <strong>RCBC</strong>
-              <small>RCBC online banking</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_landbank">
-            <img class="pay-method-logo" src="/static/img/payments/landbank.svg" alt="Landbank">
-            <span class="pay-method-info">
-              <strong>Landbank</strong>
-              <small>Landbank online banking</small>
+              <small>Rizal Commercial Banking Corporation / RCBC Online</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <button type="button" class="pay-method-btn" data-pay="swiftpay_pnb">
-            <img class="pay-method-logo" src="/static/img/payments/pnb.svg" alt="PNB">
+            <img class="pay-method-logo" src="<%= getIcon('pnb') %>" alt="PNB">
             <span class="pay-method-info">
               <strong>PNB</strong>
-              <small>Philippine National Bank online banking</small>
+              <small>Philippine National Bank / PNB Online</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_securitybank">
-            <img class="pay-method-logo" src="/static/img/payments/securitybank.svg" alt="Security Bank">
+          
+          <%# Generic SwiftPay — shows all available institutions on SwiftPay's page %>
+          <button type="button" class="pay-method-btn" data-pay="swiftpay">
+            <img class="pay-method-logo" src="<%= getIcon('swiftpay') %>" alt="SwiftPay">
             <span class="pay-method-info">
-              <strong>Security Bank</strong>
-              <small>Security Bank online banking</small>
-            </span>
-            <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-          <button type="button" class="pay-method-btn" data-pay="swiftpay_chinabank">
-            <img class="pay-method-logo" src="/static/img/payments/chinabank.svg" alt="China Bank">
-            <span class="pay-method-info">
-              <strong>China Bank</strong>
-              <small>China Banking Corporation online banking</small>
+              <strong>More Payment Options</strong>
+              <small>Other banks and payment methods via SwiftPay</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>

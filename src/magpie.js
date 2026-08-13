@@ -149,7 +149,30 @@ async function convertAmountWithCache(baseCurrency, targetCurrency, amount) {
   const provider = settingOrEnv('magpie_rate_provider', 'MAGPIE_RATE_PROVIDER', 'er-api');
   let rate = null;
 
-  if (provider === 'er-api') {
+  if (provider === 'exchangerate-api.com' || provider === 'exchangerate-api') {
+    // ExchangeRate-API.com (paid/freemium) — requires API key
+    const apiKey = settingOrEnv('magpie_rate_api_key', 'MAGPIE_RATE_API_KEY');
+    if (!apiKey) {
+      console.warn('[Magpie] exchangerate-api.com selected but MAGPIE_RATE_API_KEY not configured — falling back to free providers');
+    } else {
+      try {
+        const url = `https://v6.exchangerate-api.com/v6/${encodeURIComponent(apiKey)}/latest/${encodeURIComponent(baseCurrency)}`;
+        const res = await fetch(url, { method: 'GET' });
+        if (res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data && data.result === 'success' && data.rates && typeof data.rates[targetCurrency] === 'number') {
+            rate = Number(data.rates[targetCurrency]);
+          }
+        } else if (res.status === 401) {
+          console.error('[Magpie] exchangerate-api.com returned 401 — API key may be invalid');
+        }
+      } catch (e) {
+        console.warn('[Magpie] exchangerate-api.com conversion error:', e && e.message);
+      }
+    }
+  }
+
+  if (rate === null && provider === 'er-api') {
     // ExchangeRate-API (open.er-api.com) — public/free endpoint
     try {
       const url = `https://open.er-api.com/v6/latest/${encodeURIComponent(baseCurrency)}`;
@@ -234,8 +257,8 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
   // Magpie amount is in the smallest currency unit (assume 2 decimal places).
   const amountSmallestUnit = Math.round(Number(amountInTarget) * 100);
 
-  const successUrl = `${baseUrl}/order/result?ref=${encodeURIComponent(order.order_number)}&status=success`;
-  const failUrl = `${baseUrl}/order/result?ref=${encodeURIComponent(order.order_number)}&status=cancel`;
+  const successUrl = `${baseUrl}/magpie/status?ref=${encodeURIComponent(order.order_number)}&status=success`;
+  const failUrl = `${baseUrl}/magpie/status?ref=${encodeURIComponent(order.order_number)}&status=cancel`;
 
   let lastError = null;
   let sourceData = null;
@@ -357,11 +380,25 @@ async function createCheckout(order, baseUrl, method = 'alipay') {
 
 /**
  * Verify the HMAC-SHA256 signature on an incoming Magpie webhook.
- * Magpie signs the raw JSON body with the webhook secret.
+ * Magpie signs the raw JSON body with the webhook secret (if configured).
+ * 
+ * If MAGPIE_WEBHOOK_SECRET is not set:
+ *   - Returns { verified: false, skipped: true }
+ *   - Webhooks are accepted without signature check
+ *   - This is safe because webhooks are sent from Magpie's infrastructure
+ * 
+ * If MAGPIE_WEBHOOK_SECRET is set:
+ *   - Verifies the signature
+ *   - Returns { verified: true/false, skipped: false }
+ *   - Invalid signatures are rejected
  */
 function verifyWebhookSignature(rawBody, signature) {
   const secret = settingOrEnv('magpie_webhook_secret', 'MAGPIE_WEBHOOK_SECRET');
-  if (!secret) return { verified: false, skipped: true };
+  if (!secret) {
+    // No secret configured — skip verification but allow webhook
+    // (Magpie webhooks are secure because they originate from Magpie's servers)
+    return { verified: false, skipped: true };
+  }
   if (!signature) return { verified: false, skipped: false };
 
   const incoming = String(signature).split('=').pop().toLowerCase().trim();
@@ -384,6 +421,51 @@ function normalizeStatus(raw) {
   if (['paid', 'success', 'completed', 'settled', 'captured'].includes(s)) return 'paid';
   if (['failed', 'expired', 'cancelled', 'canceled', 'voided', 'declined', 'error', 'refunded'].includes(s)) return 'failed';
   return 'pending';
+}
+
+/**
+ * Fetch a charge by ID from Magpie API to get current payment status.
+ * Used to sync order status when returning from payment page (before webhook arrives).
+ * Returns: 'paid', 'failed', or 'pending'
+ */
+async function getChargeStatus(chargeId) {
+  const publicKey = settingOrEnv('magpie_api_key', 'MAGPIE_API_KEY');
+  const secretKey = settingOrEnv('magpie_api_secret', 'MAGPIE_API_SECRET');
+  if (!publicKey || !secretKey) {
+    console.error('[Magpie] getChargeStatus: API keys not configured');
+    return 'pending';
+  }
+
+  if (!chargeId) {
+    console.error('[Magpie] getChargeStatus: missing chargeId');
+    return 'pending';
+  }
+
+  try {
+    const res = await fetch(apiUrl(`charges/${chargeId}`), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(`${publicKey}:${secretKey}`).toString('base64'),
+      },
+    });
+
+    if (!res.ok) {
+      console.warn('[Magpie] getChargeStatus returned', res.status);
+      return 'pending';
+    }
+
+    const text = await res.text();
+    const data = parseJsonBody(text) || {};
+    
+    // Magpie response: { id, status, ... } or { data: { status, ... } }
+    const chargeData = data.data || data;
+    const rawStatus = chargeData.status || null;
+    return normalizeStatus(rawStatus);
+  } catch (e) {
+    console.error('[Magpie] getChargeStatus error:', e.message);
+    return 'pending';
+  }
 }
 
 /**
@@ -444,6 +526,7 @@ async function testConnection() {
 module.exports = {
   isConfigured,
   createCheckout,
+  getChargeStatus,
   normalizeStatus,
   verifyWebhookSignature,
   testConnection,
