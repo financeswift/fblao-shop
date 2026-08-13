@@ -10,63 +10,14 @@
       <span class="shining-gold horse-tagline">BlackHorse</span>
     </div>
 
-    <!-- E-wallets & Cards -->
+    <!-- Payment Methods (User Uploaded) -->
+    <% if (footerMethods.length > 0) { %>
     <div class="footer-icon-group">
-      <span class="footer-icon-label">E-Wallets &amp; Cards</span>
+      <span class="footer-icon-label">Payment Methods</span>
       <div class="payment-methods">
-        <img class="payment-icon payment-icon-visa" src="<%= getIcon('visa') %>" alt="Visa">
-        <img class="payment-icon payment-icon-mastercard" src="<%= getIcon('mastercard') %>" alt="Mastercard">
-        <img class="payment-icon" src="<%= getIcon('jcb') %>" alt="JCB">
-        <img class="payment-icon" src="<%= getIcon('amex') %>" alt="Amex">
-        <img class="payment-icon" src="<%= getIcon('gcash') %>" alt="GCash">
-        <img class="payment-icon" src="<%= getIcon('maya') %>" alt="Maya">
-        <% if (coinsEnabled) { %>
-          <img class="payment-icon" src="<%= getIcon('coins') %>" alt="Coins.ph">
-        <% } %>
-        <% if (paymongoEnabled) { %>
-          <img class="payment-icon" src="<%= getIcon('paymongo') %>" alt="PayMongo">
-        <% } %>
-        <% if (xenditEnabled) { %>
-          <img class="payment-icon" src="<%= getIcon('xendit') %>" alt="Xendit">
-        <% } %>
-        <% if (magpieEnabled) { %>
-          <img class="payment-icon" src="<%= getIcon('alipay') %>" alt="Alipay">
-          <img class="payment-icon" src="<%= getIcon('wechat') %>" alt="WeChat Pay">
-        <% } %>
         <% footerMethods.forEach(function(m){ %>
-          <% var icon = getIcon(m.name, m.icon_url); %>
-          <% if (icon && !['visa','mastercard','maya','paymaya','paymongo','xendit','coins','coins.ph','coinsph','swiftpay','swiftpay ph','swiftpayph','gcash','jcb','amex','alipay','wechat','bpi','bdo','unionbank','union bank','metrobank','rcbc','landbank','land bank','securitybank','security bank','chinabank','china bank','pnb'].some(v => m.name.toLowerCase().includes(v))) { %>
-            <img class="payment-icon" src="<%= icon %>" alt="<%= m.name %>">
-          <% } %>
+          <img class="payment-icon" src="<%= m.icon_url %>" alt="<%= escapeHtml(m.name) %>" title="<%= escapeHtml(m.name) %>">
         <% }) %>
-      </div>
-    </div>
-
-    <!-- Philippine Banks (via SwiftPay) -->
-    <% if (swiftpayEnabled) { %>
-    <div class="footer-icon-group">
-      <span class="footer-icon-label">Philippine Banks</span>
-      <div class="payment-methods">
-        <img class="payment-icon" src="<%= getIcon('bpi') %>" alt="BPI" title="Bank of the Philippine Islands">
-        <img class="payment-icon" src="<%= getIcon('bpi-fsb') %>" alt="BPI FSB" title="BPI Family Savings Bank">
-        <img class="payment-icon" src="<%= getIcon('bdo') %>" alt="BDO" title="Banco de Oro">
-        <img class="payment-icon" src="<%= getIcon('unionbank') %>" alt="UnionBank" title="Union Bank of the Philippines">
-        <img class="payment-icon" src="<%= getIcon('metrobank') %>" alt="Metrobank" title="Metropolitan Bank and Trust Company">
-        <img class="payment-icon" src="<%= getIcon('rcbc') %>" alt="RCBC" title="Rizal Commercial Banking Corporation">
-        <img class="payment-icon" src="<%= getIcon('landbank') %>" alt="LandBank" title="Land Bank of the Philippines">
-        <img class="payment-icon" src="<%= getIcon('pnb') %>" alt="PNB" title="Philippine National Bank">
-        <img class="payment-icon" src="<%= getIcon('netbank') %>" alt="NetBank" title="NetBank">
-        <img class="payment-icon" src="<%= getIcon('vbank') %>" alt="VBank" title="Virtual Bank">
-      </div>
-    </div>
-    <% } %>
-
-    <!-- SwiftPay & Other Gateways -->
-    <% if (swiftpayEnabled) { %>
-    <div class="footer-icon-group">
-      <span class="footer-icon-label">Other Methods</span>
-      <div class="payment-methods">
-        <img class="payment-icon" src="<%= getIcon('swiftpay') %>" alt="SwiftPay PH" title="SwiftPay QR Ph (InstaPay/PESONet)">
       </div>
     </div>
     <% } %>

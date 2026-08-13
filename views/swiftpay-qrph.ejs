@@ -1,84 +1,92 @@
 <%- include('partials/head') %>
 
-<div class="card">
-  <div class="swiftpay-hero">
-    <div>
-      <div class="status-pill status-pending">Awaiting payment</div>
-      <h2 style="margin: 0 0 8px;">Pay via QR Ph</h2>
-      <p class="muted" style="margin: 0;">Scan the QR code below with any InstaPay-enabled banking app.</p>
+<div class="gcash-qr-page">
+  <div class="gcash-qr-header">
+    <div class="gcash-qr-logo-wrap">
+      <img class="gcash-qr-logo" src="<%= getIcon('gcash') %>" alt="GCash">
+      <span class="gcash-qr-wordmark">GCash</span>
     </div>
-    <img class="swiftpay-badge" src="<%= getIcon('swiftpay') %>" alt="Swiftpay PH">
   </div>
 
-  <div class="swiftpay-layout">
-    <div class="subpanel">
-      <h3 style="margin-top:0;">Order summary</h3>
-      <table class="kv" style="margin-bottom:0;">
-        <tr><th>Order number</th><td><strong><%= order.order_number %></strong></td></tr>
-        <tr><th>Telegram</th><td>@<%= order.telegram_username %></td></tr>
-        <tr><th>Product</th><td><%= order.product_name %></td></tr>
-        <tr><th>Quantity</th><td><%= order.quantity %></td></tr>
-        <tr><th>Total</th><td><strong><%= money(order.total) %></strong></td></tr>
-      </table>
-    </div>
+  <div class="gcash-qr-content">
+    <% if (order.status === 'paid' || order.status === 'delivered') { %>
+      <div class="alert alert-success">Payment confirmed! Your order is being processed.</div>
+      <a class="btn btn-primary" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">View order status</a>
+    <% } else if (order.status === 'failed') { %>
+      <div class="alert alert-error">Payment failed or expired. Please start a new order.</div>
+    <% } else { %>
+      <% if (paymentId) { %>
+        <div class="gcash-qr-card">
+          <p class="gcash-qr-title">Open your GCash app to pay this transaction.</p>
 
-    <div class="subpanel" style="text-align:center;">
-      <% if (order.status === 'paid' || order.status === 'delivered') { %>
-        <div class="alert alert-success">Payment confirmed! Your order is being processed.</div>
-        <a class="btn btn-primary" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">View order status</a>
-      <% } else if (order.status === 'failed') { %>
-        <div class="alert alert-error">Payment failed or expired. Please start a new order.</div>
-      <% } else { %>
-        <% if (paymentId) { %>
-          <p class="muted" style="margin-bottom:12px;">Open your bank app, select <strong>QR Ph / InstaPay</strong>, and scan:</p>
-          <img
-            id="qrph-img"
-            src="/swiftpay/qrph/image?paymentId=<%= encodeURIComponent(paymentId) %>"
-            alt="QR Ph Payment Code"
-            style="width:240px;height:240px;border:1px solid var(--border);border-radius:12px;padding:8px;background:#fff;"
-            onerror="document.getElementById('qrph-fallback').style.display='block';this.style.display='none';"
+          <a
+            id="gcash-deep-link"
+            class="gcash-open-btn"
+            href="gcash://qr/scan"
+            target="_self"
+            rel="noopener noreferrer"
           >
-          <div id="qrph-fallback" style="display:none;" class="alert alert-error">
+            Open GCash app to pay
+          </a>
+
+          <div class="gcash-qr-divider">
+            <span>or scan QR</span>
+          </div>
+
+          <div class="gcash-qr-box">
+            <img
+              id="qrph-img"
+              class="gcash-qr-image"
+              src="/swiftpay/qrph/image?paymentId=<%= encodeURIComponent(paymentId) %>"
+              alt="GCash QR Payment Code"
+              onerror="document.getElementById('qrph-fallback').style.display='block';this.style.display='none';"
+            >
+          </div>
+
+          <div id="qrph-fallback" class="alert alert-error" style="display:none; margin-top: 12px;">
             QR image could not be loaded. Please use the raw QR code string below with a QR reader app.
           </div>
-          <details style="margin-top:12px;text-align:left;">
-            <summary class="muted" style="cursor:pointer;font-size:13px;">Show raw QR string</summary>
-            <code style="display:block;word-break:break-all;font-size:11px;margin-top:8px;padding:8px;background:var(--panel);border-radius:8px;"><%= qrCode %></code>
-          </details>
-        <% } else { %>
-          <div class="alert alert-error">QR code is unavailable. Please contact support with your order number.</div>
-        <% } %>
 
-        <div class="instructions swiftpay-note" style="text-align:left;margin-top:20px;">
-          <h3>How to pay</h3>
-          <div class="instructions-body">
-            1. Open your bank app (BDO, BPI, UnionBank, GCash, Maya, etc.).<br>
-            2. Go to <strong>Send / Transfer → QR Ph</strong>.<br>
-            3. Scan the QR code above.<br>
-            4. Confirm the amount of <strong><%= money(order.total) %></strong>.<br>
-            5. Come back here or check your Telegram for delivery.
+          <p class="gcash-qr-amount">Pay <strong><%= money(order.total) %></strong> via GCash</p>
+
+          <div class="gcash-qr-actions">
+            <a class="gcash-web-btn" href="https://www.gcash.com/pay" target="_blank" rel="noopener noreferrer">GCash Web Pay</a>
+            <a class="gcash-status-btn" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">Check status</a>
           </div>
-        </div>
 
-        <div class="actions" style="margin-top:16px;">
-          <a class="btn btn-primary" href="/swiftpay/qrph?ref=<%= encodeURIComponent(order.order_number) %>" id="refresh-btn">Refresh status</a>
-          <a class="btn btn-light" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">General status</a>
+          <details class="gcash-qr-details">
+            <summary>Show raw QR string</summary>
+            <code><%= qrCode %></code>
+          </details>
         </div>
-
-        <%# Auto-refresh every 10 seconds while pending %>
-        <script>
-          (function () {
-            var timer = setTimeout(function () {
-              window.location.reload();
-            }, 10000);
-            document.getElementById('refresh-btn').addEventListener('click', function () {
-              clearTimeout(timer);
-            });
-          })();
-        </script>
+      <% } else { %>
+        <div class="alert alert-error">QR code is unavailable. Please contact support with your order number.</div>
       <% } %>
-    </div>
+    <% } %>
   </div>
 </div>
+
+<script>
+  (function () {
+    var link = document.getElementById('gcash-deep-link');
+    if (!link) return;
+
+    var webPayUrl = 'https://www.gcash.com/pay';
+    var startedAt = Date.now();
+
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+        window.open(webPayUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      window.location.href = 'gcash://qr/scan';
+      setTimeout(function () {
+        if (Date.now() - startedAt >= 1200) return;
+        window.open(webPayUrl, '_blank', 'noopener,noreferrer');
+      }, 1200);
+    });
+  })();
+</script>
 
 <%- include('partials/foot') %>

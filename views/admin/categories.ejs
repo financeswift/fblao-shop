@@ -7,6 +7,7 @@
   <div class="subpanel" style="padding: 20px; border-top: 3px solid var(--accent);">
     <h2>Add New Category</h2>
     <form method="POST" action="/admin/categories">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label class="field"><span>Name</span><input type="text" name="name" required placeholder="e.g. Premium Accounts"></label>
       <label class="field"><span>Sort Order</span><input type="number" name="sort_order" value="0"></label>
       <button class="btn btn-primary btn-block" type="submit">Add Category</button>
@@ -37,6 +38,7 @@
               <td class="muted">#<%= c.id %></td>
               <td>
                 <form id="edit-cat-<%= c.id %>" method="POST" action="/admin/categories/<%= c.id %>/update" style="margin:0;">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <input type="text" name="name" value="<%= escapeHtml(c.name) %>" style="padding: 6px 10px; font-weight: 600;">
                 </form>
               </td>
@@ -47,6 +49,7 @@
                 <div style="display: flex; gap: 5px; justify-content: flex-end;">
                   <button form="edit-cat-<%= c.id %>" class="btn btn-sm btn-primary" type="submit" style="padding: 4px 10px;">Save</button>
                   <form method="POST" action="/admin/categories/<%= c.id %>/delete" onsubmit="return confirm('Delete this category and ALL its products?');" style="margin:0;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn btn-sm btn-danger" type="submit" style="padding: 4px 10px;">Delete</button>
                   </form>
                 </div>

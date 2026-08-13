@@ -17,10 +17,8 @@ const StoreService = require('../services/store');
 // Supported SwiftPay payment types (verified working with SwiftPay API)
 // Each of these channels works the same way: direct redirect to specific payment method
 const SWIFTPAY_TYPES = [
-  'swiftpay',             // Generic: show institution selection screen
   'swiftpay_maya',        // Maya e-wallet (direct payment)
-  'swiftpay_gcash',       // GCash e-wallet (direct payment)
-  'swiftpay_qrph',        // QR Ph (InstaPay/PESONet — special flow with inline QR)
+  'swiftpay_qrph',        // QR Ph (InstaPay/PESONet — special flow with inline QR, also used for GCash)
   // Major Philippine banks (online banking redirects)
   'swiftpay_bpi',         // Bank of the Philippine Islands
   'swiftpay_bpi_fsb',     // BPI Family Savings Bank
@@ -29,7 +27,6 @@ const SWIFTPAY_TYPES = [
   'swiftpay_metrobank',   // Metropolitan Bank and Trust Company
   'swiftpay_landbank',    // Land Bank of the Philippines
   'swiftpay_rcbc',        // RCBC (Rizal Commercial Banking Corporation)
-  'swiftpay_pnb',         // Philippine National Bank
   'swiftpay_netbank',     // NetBank / Other institutions
   'swiftpay_vbank',       // Virtual Bank / Other institutions
 ];
@@ -81,7 +78,7 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
   const telegramUsername = String(req.body.telegram_username || '').trim().replace(/^@/, '');
   const productId = parseInt(req.body.product_id, 10);
   const quantity = Math.max(1, parseInt(req.body.quantity, 10) || 1);
-  const paymentType = req.body.payment_type; // 'manual', 'maya', 'coins', 'paymongo', 'xendit', 'magpie_alipay', 'magpie_wechat', 'swiftpay', 'swiftpay_maya', 'swiftpay_qrph', 'swiftpay_gcash'
+  const paymentType = req.body.payment_type; // 'manual', 'maya', 'coins', 'paymongo', 'xendit', 'magpie_alipay', 'magpie_wechat', 'swiftpay_maya', 'swiftpay_qrph', etc
   const manualMethodId = req.body.manual_method_id ? parseInt(req.body.manual_method_id, 10) : null;
 
   if (!telegramUsername) {
@@ -240,7 +237,6 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
     // Note: Only institutions that are confirmed to work via the SwiftPay API are included.
     const institutionMap = {
       // E-wallets (direct payment, instant redirect)
-      swiftpay_gcash: 'GCASH',
       swiftpay_maya: 'MAYA_WALLET',
       // Philippine Banks (online banking login, then transfer to account)
       swiftpay_bpi: 'BPI',
@@ -250,10 +246,8 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
       swiftpay_metrobank: 'METROBANK',
       swiftpay_landbank: 'LANDBANK',
       swiftpay_rcbc: 'RCBC',
-      swiftpay_pnb: 'PNB',
       swiftpay_netbank: 'NETBANK',
       swiftpay_vbank: 'VBANK',
-      // swiftpay_qrph and plain 'swiftpay': use special handling (no institution_code → show selection screen)
     };
     let institutionCode = institutionMap[paymentType] || null;
     if (!institutionCode) {
