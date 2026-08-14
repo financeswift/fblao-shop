@@ -37,6 +37,9 @@
     return symbol ? symbol + formatted : formatted + ' ' + currencyCode;
   }
 
+  window.money = fmt;
+  window.currencyCode = currencyCode;
+
   var filterForm = document.getElementById('catalogFilters');
   if (filterForm) {
     var searchInput = document.getElementById('catalogSearch');
