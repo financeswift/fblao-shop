@@ -1220,6 +1220,11 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 .admin-side a.active { color: var(--accent); background: rgba(212, 175, 55, 0.08); border-right-color: var(--accent); }
 .admin-main { flex: 1; padding: 35px 40px; max-width: 100%; overflow-x: auto; }
 
+/* Admin Form Utilities */
+.inline-form { display: inline; }
+.subpanel form { display: block; }
+.subpanel form + .inline-form { display: inline-block; float: right; margin-top: -34px; }
+
 .stack { display: flex; flex-direction: column; }
 .subpanel h2 { margin-top: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 15px; }
 

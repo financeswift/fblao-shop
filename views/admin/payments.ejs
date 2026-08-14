@@ -5,6 +5,7 @@
 <div class="subpanel" style="margin-bottom:20px;">
   <h2>Add method</h2>
   <form method="POST" action="/admin/payments">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="field-row">
       <label class="field" style="flex:2;"><span>Name (e.g. GCash, Bank Transfer)</span><input type="text" name="name" required></label>
       <label class="field"><span>Sort</span><input type="number" name="sort_order" value="0"></label>
@@ -21,6 +22,7 @@
 <% methods.forEach(function(m){ %>
   <div class="subpanel" style="margin-bottom:12px;">
     <form method="POST" action="/admin/payments/<%= m.id %>/update">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field-row">
         <label class="field" style="flex:2;"><span>Name</span><input type="text" name="name" value="<%= escapeHtml(m.name) %>"></label>
         <label class="field"><span>Sort</span><input type="number" name="sort_order" value="<%= m.sort_order %>"></label>
@@ -30,7 +32,8 @@
         <textarea name="instructions" rows="4"><%= m.instructions %></textarea></label>
       <button class="btn btn-sm btn-primary" type="submit">Save</button>
     </form>
-    <form class="inline-form" method="POST" action="/admin/payments/<%= m.id %>/delete" onsubmit="return confirm('Delete this payment method?');" style="margin-top:-34px; text-align:right;">
+    <form class="inline-form" method="POST" action="/admin/payments/<%= m.id %>/delete" onsubmit="return confirm('Delete this payment method?');">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button class="btn btn-sm btn-danger" type="submit">Delete</button>
     </form>
   </div>

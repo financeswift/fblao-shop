@@ -5,6 +5,7 @@
 <div class="subpanel" style="margin-bottom:20px;">
   <h2>Add banner</h2>
   <form method="POST" action="/admin/banners">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <label class="field"><span>Text</span><input type="text" name="text" required></label>
     <div class="field-row">
       <label class="field"><span>Sort</span><input type="number" name="sort_order" value="0"></label>
@@ -19,6 +20,7 @@
 <% banners.forEach(function(b){ %>
   <div class="subpanel" style="margin-bottom:12px;">
     <form method="POST" action="/admin/banners/<%= b.id %>/update">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label class="field"><span>Text</span><input type="text" name="text" value="<%= escapeHtml(b.text) %>"></label>
       <div class="field-row">
         <label class="field"><span>Sort</span><input type="number" name="sort_order" value="<%= b.sort_order %>"></label>
@@ -26,7 +28,8 @@
       </div>
       <button class="btn btn-sm btn-primary" type="submit">Save</button>
     </form>
-    <form class="inline-form" method="POST" action="/admin/banners/<%= b.id %>/delete" onsubmit="return confirm('Delete this banner?');" style="margin-top:-34px; text-align:right;">
+    <form class="inline-form" method="POST" action="/admin/banners/<%= b.id %>/delete" onsubmit="return confirm('Delete this banner?');">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button class="btn btn-sm btn-danger" type="submit">Delete</button>
     </form>
   </div>
