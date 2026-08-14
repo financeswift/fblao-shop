@@ -865,7 +865,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 }
 
 /* Footer */
-.site-footer { border-top: 1px solid var(--border); padding: 32px 0; margin-top: 40px; color: var(--muted); font-size: 13px; text-align: center; background: #fff; }
+.site-footer { border-top: 1px solid var(--border); padding: 24px 0; margin-top: 40px; color: var(--muted); font-size: 13px; text-align: center; background: #fff; }
 .site-footer p { margin: 4px 0; }
 .site-footer .footer-brand { display: none; }
 .site-footer .footer-brand img { height: 32px; max-width: 180px; object-fit: contain; margin-bottom: 18px; }
@@ -875,17 +875,17 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 22px;
+  margin-bottom: 14px;
 }
 .horse-tagline {
-  font-size: 22px;
+  font-size: 18px;
   letter-spacing: 0.08em;
   font-weight: 900;
 }
 
 /* Footer icon groups */
 .footer-icon-group {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 .footer-icon-label {
   display: block;
@@ -896,32 +896,32 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   color: var(--muted);
   margin-bottom: 10px;
 }
-.payment-methods { margin-bottom: 4px; display: flex; justify-content: center; gap: 10px; align-items: center; flex-wrap: wrap; }
+.payment-methods { margin-bottom: 2px; display: flex; justify-content: center; gap: 6px; align-items: center; flex-wrap: wrap; }
 .payment-methods .payment-icon {
   display: block;
   width: auto;
-  height: 30px;
-  max-width: 120px;
+  height: 24px;
+  max-width: 100px;
   object-fit: contain;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--pill-radius);
-  padding: 5px 10px;
+  padding: 4px 8px;
 }
 .footer-partners {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-top: 8px;
-  max-width: 600px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+  max-width: 500px;
   margin-left: auto;
   margin-right: auto;
 }
 .footer-partner-icon {
   display: block;
   width: 100%;
-  height: 50px;
+  height: 35px;
   object-fit: contain;
   transition: transform 0.2s ease, filter 0.2s ease;
   opacity: 0.85;
@@ -1423,13 +1423,13 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   
   /* Footer adjustments */
   .site-footer { padding: 24px 0; margin-top: 30px; }
-  .footer-horse { margin-bottom: 18px; }
-  .horse-tagline { font-size: 20px; }
-  .footer-icon-label { font-size: 9px; margin-bottom: 8px; }
-  .payment-methods { gap: 8px; }
-  .payment-methods .payment-icon { height: 26px; max-width: 100px; padding: 4px 8px; }
-  .footer-partners { grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 6px; }
-  .footer-partner-icon { height: 45px; }
+  .footer-horse { margin-bottom: 14px; }
+  .horse-tagline { font-size: 17px; }
+  .footer-icon-label { font-size: 9px; margin-bottom: 7px; }
+  .payment-methods { gap: 6px; }
+  .payment-methods .payment-icon { height: 22px; max-width: 90px; padding: 3px 6px; }
+  .footer-partners { grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 5px; }
+  .footer-partner-icon { height: 32px; }
   
   .site-footer p { font-size: 12px; margin: 3px 0; }
 }
