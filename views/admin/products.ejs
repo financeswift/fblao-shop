@@ -3,6 +3,7 @@
   <h1 style="margin:0;">Products</h1>
   <div style="display: flex; gap: 10px;">
     <form method="POST" action="/admin/products/sync-all" style="margin:0;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button class="btn btn-sm" type="submit" style="background: var(--panel-2); color: var(--muted); border: 1px solid var(--border);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
         Sync All Stock
@@ -81,9 +82,11 @@
             <div style="display: flex; gap: 5px; justify-content: flex-end;">
               <button class="btn btn-sm" onclick="this.closest('tr').nextElementSibling.style.display = this.closest('tr').nextElementSibling.style.display === 'none' ? 'table-row' : 'none'" style="padding: 4px 10px;">Edit</button>
               <form method="POST" action="/admin/products/<%= p.id %>/duplicate" style="margin:0;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button class="btn btn-sm" type="submit" style="padding: 4px 10px;" title="Duplicate">Copy</button>
               </form>
               <form method="POST" action="/admin/products/<%= p.id %>/delete" onsubmit="return confirm('Delete this product?');" style="margin:0;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button class="btn btn-sm btn-danger" type="submit" style="padding: 4px 10px;">&times;</button>
               </form>
             </div>
@@ -92,6 +95,7 @@
         <tr style="display: none; background: var(--panel-2);">
           <td colspan="7" style="padding: 20px;">
             <form method="POST" action="/admin/products/<%= p.id %>/update">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <div class="field-row">
                 <label class="field" style="flex:1;"><span>Name</span><input type="text" name="name" value="<%= escapeHtml(p.name) %>"></label>
                 <label class="field" style="flex:1;"><span>Category</span>
@@ -141,6 +145,7 @@
     </div>
   <% } else { %>
   <form method="POST" action="/admin/products">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="field-row">
       <label class="field" style="flex: 1.5;"><span>Product Name</span><input type="text" name="name" required placeholder="e.g. Aged Facebook Account (2015)"></label>
       <label class="field" style="flex: 1;"><span>Category</span>
