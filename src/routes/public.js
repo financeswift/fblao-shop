@@ -18,7 +18,8 @@ const StoreService = require('../services/store');
 // Each of these channels works the same way: direct redirect to specific payment method
 const SWIFTPAY_TYPES = [
   'swiftpay_maya',        // Maya e-wallet (direct payment)
-  'swiftpay_qrph',        // QR Ph (InstaPay/PESONet — special flow with inline QR, also used for GCash)
+  'swiftpay_gcash',       // GCash e-wallet (special flow with inline QR)
+  'swiftpay_qrph',        // QR Ph (InstaPay/PESONet — special flow with inline QR)
   // Major Philippine banks (online banking redirects)
   'swiftpay_bpi',         // Bank of the Philippine Islands
   'swiftpay_bpi_fsb',     // BPI Family Savings Bank
@@ -42,9 +43,9 @@ async function syncSwiftpayOrderStatus(order) {
   }
 
   try {
-    // For QR Ph, swiftpay_checkout_id holds the paymentId (not the reference number).
+    // For GCash and QR Ph, swiftpay_checkout_id holds the paymentId (not the reference number).
     // The status query always uses the order_number as the referenceNo.
-    const refNo = order.payment_type === 'swiftpay_qrph'
+    const refNo = (order.payment_type === 'swiftpay_qrph' || order.payment_type === 'swiftpay_gcash')
       ? order.order_number
       : order.swiftpay_checkout_id;
     const status = await swiftpay.getCheckoutStatus(refNo);
@@ -212,8 +213,25 @@ router.post('/order', rateLimit, asyncHandler(async (req, res) => {
   }
 
   if (SWIFTPAY_TYPES.includes(paymentType)) {
-    // QR Ph has a completely different API flow: bootstrap/qrph returns a QR code
+    // GCash and QR Ph have a special API flow: bootstrap returns a QR code
     // that is displayed inline on our page — there is no customer redirect to SwiftPay.
+    if (paymentType === 'swiftpay_gcash') {
+      try {
+        const { paymentId, qrCode } = await swiftpay.createQrph(order);
+        db.prepare('UPDATE orders SET swiftpay_checkout_id = ?, swiftpay_checkout_url = ? WHERE id = ?').run(paymentId, qrCode, order.id);
+        return res.redirect(`/swiftpay/gcash?ref=${encodeURIComponent(orderNumber)}`);
+      } catch (e) {
+        db.prepare("UPDATE orders SET status = 'failed', admin_notes = ? WHERE id = ?").run(
+          'SwiftPay GCash error: ' + e.message,
+          order.id
+        );
+        return res.status(502).render('error', {
+          title: 'Payment error',
+          message: 'Could not generate GCash QR code. ' + e.message + ` Your reference is ${orderNumber}.`,
+        });
+      }
+    }
+
     if (paymentType === 'swiftpay_qrph') {
       try {
         const { paymentId, qrCode } = await swiftpay.createQrph(order);
@@ -323,6 +341,27 @@ router.get('/swiftpay/checkout', asyncHandler(async (req, res) => {
     title: `Swiftpay Checkout · ${order.order_number}`,
     order,
     checkoutUrl: order.swiftpay_checkout_url || '',
+  });
+}));
+
+// GCash payment page — shows the GCash QR code inline ----------------------------
+router.get('/swiftpay/gcash', asyncHandler(async (req, res) => {
+  const ref = String(req.query.ref || '').trim();
+  let order = StoreService.getOrder(ref);
+  if (!order) {
+    return res.status(404).render('error', { title: 'Not found', message: 'Order not found.' });
+  }
+  if (order.payment_type !== 'swiftpay_gcash') {
+    return res.redirect(`/order/result?ref=${encodeURIComponent(order.order_number)}`);
+  }
+
+  order = await syncSwiftpayOrderStatus(order);
+
+  res.render('swiftpay-gcash', {
+    title: `GCash Payment · ${order.order_number}`,
+    order,
+    paymentId: order.swiftpay_checkout_id || '',
+    qrCode: order.swiftpay_checkout_url || '',
   });
 }));
 

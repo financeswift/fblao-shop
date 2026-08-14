@@ -6,7 +6,7 @@
 const ICONS = {
   // E-Wallets & Digital Payments
   gcash: '/logos-upload/gcash@selection.png',
-  gcash_payment_page: '/logos-upload/gcash@paymentpage.png',
+  gcash_payment_page: '/static/img/footer-logos/gcash@paymentpage.png',
   maya: '/static/img/payments/maya.png',
   paymaya: '/static/img/payments/maya.png',
   grabpay: '/static/img/payments/grabpay.svg',

@@ -764,6 +764,106 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   display: none;
 }
 
+/* QRPH QR page */
+.qrph-qr-page {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #1e40af 0%, #1e40af 25%, #e5e5e5 0%, #e5e5e5 100%);
+  padding: 0;
+  margin: 0;
+}
+.qrph-qr-header {
+  text-align: center;
+  padding: 10px 20px;
+  background: transparent;
+}
+.qrph-qr-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding-top: 20px;
+}
+.qrph-qr-logo {
+  width: 60px;
+  height: auto;
+  display: block;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  object-fit: contain;
+}
+.qrph-qr-content {
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 20px 40px;
+}
+.qrph-qr-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 30px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  width: 100%;
+  max-width: 480px;
+}
+.qrph-qr-title {
+  margin: 0 0 20px;
+  color: #374151;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.qrph-qr-box {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0;
+}
+.qrph-qr-image {
+  width: 260px;
+  height: 260px;
+  max-width: 100%;
+  display: block;
+  background: #fff;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+.qrph-qr-amount {
+  margin: 14px 0 18px;
+  color: #374151;
+  font-size: 15px;
+}
+.qrph-qr-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.qrph-status-btn {
+  padding: 12px 14px;
+  font-size: 14px;
+  border: 1px solid #dfe4ea;
+  color: #1d4ed8;
+  background: #eef2ff;
+  border-color: #dfe7ff;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+}
+.qrph-status-btn:hover {
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
 /* Footer */
 .site-footer { border-top: 1px solid var(--border); padding: 32px 0; margin-top: 40px; color: var(--muted); font-size: 13px; text-align: center; background: #fff; }
 .site-footer p { margin: 4px 0; }
@@ -809,12 +909,19 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   border-radius: var(--pill-radius);
   padding: 5px 10px;
 }
-.footer-partners { display: flex; justify-content: center; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.footer-partners {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
 .footer-partner-icon {
   display: block;
-  width: auto;
-  height: 28px;
-  max-width: 110px;
+  width: 100%;
+  height: 100px;
   object-fit: contain;
   transition: transform 0.2s ease, filter 0.2s ease;
   opacity: 0.85;
@@ -822,8 +929,6 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 .footer-partner-icon:hover {
   transform: scale(1.05);
   opacity: 1;
-}
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.07);
 }
 .payment-methods .payment-icon-mastercard { max-width: 140px; }
 .payment-methods .payment-icon-bank { height: 26px; max-width: 110px; }
@@ -1281,22 +1386,39 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
     background: linear-gradient(to bottom, #0057e4 0%, #0057e4 20%, #e5e5e5 0%, #e5e5e5 100%);
     padding: 0;
   }
+  .qrph-qr-page {
+    background: linear-gradient(to bottom, #1e40af 0%, #1e40af 20%, #e5e5e5 0%, #e5e5e5 100%);
+    padding: 0;
+  }
   
   .gcash-qr-header { padding: 8px 12px; }
+  .qrph-qr-header { padding: 8px 12px; }
   .gcash-qr-logo { width: 50px; }
+  .qrph-qr-logo { width: 50px; }
   .gcash-qr-logo-wrap { padding-top: 16px; }
+  .qrph-qr-logo-wrap { padding-top: 16px; }
   .gcash-qr-content { max-width: 100%; padding: 0 12px 24px; }
+  .qrph-qr-content { max-width: 100%; padding: 0 12px 24px; }
   .gcash-qr-card { 
+    padding: 28px 20px; 
+    border-radius: 12px;
+    max-width: 100%;
+  }
+  .qrph-qr-card { 
     padding: 28px 20px; 
     border-radius: 12px;
     max-width: 100%;
   }
   
   .gcash-qr-title { font-size: 16px; margin-bottom: 16px; }
+  .qrph-qr-title { font-size: 16px; margin-bottom: 16px; }
   .gcash-open-btn { padding: 16px 20px; font-size: 16px; margin-bottom: 24px; }
   .gcash-qr-image { width: 220px; height: 220px; }
+  .qrph-qr-image { width: 220px; height: 220px; }
   .gcash-qr-amount { font-size: 14px; margin: 12px 0 16px; }
+  .qrph-qr-amount { font-size: 14px; margin: 12px 0 16px; }
   .gcash-status-btn { font-size: 13px; padding: 11px 12px; }
+  .qrph-status-btn { font-size: 13px; padding: 11px 12px; }
   .gcash-qr-divider { margin-bottom: 6px; font-size: 14px; }
   
   /* Footer adjustments */
@@ -1306,8 +1428,8 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .footer-icon-label { font-size: 9px; margin-bottom: 8px; }
   .payment-methods { gap: 8px; }
   .payment-methods .payment-icon { height: 26px; max-width: 100px; padding: 4px 8px; }
-  .footer-partners { gap: 10px; margin-top: 6px; }
-  .footer-partner-icon { height: 24px; max-width: 100px; }
+  .footer-partners { grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 6px; }
+  .footer-partner-icon { height: 80px; }
   
   .site-footer p { font-size: 12px; margin: 3px 0; }
 }
@@ -1323,18 +1445,31 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .gcash-qr-page {
     background: linear-gradient(to bottom, #0057e4 0%, #0057e4 18%, #e5e5e5 0%, #e5e5e5 100%);
   }
+  .qrph-qr-page {
+    background: linear-gradient(to bottom, #1e40af 0%, #1e40af 18%, #e5e5e5 0%, #e5e5e5 100%);
+  }
   
   .gcash-qr-header { padding: 6px 10px; }
+  .qrph-qr-header { padding: 6px 10px; }
   .gcash-qr-logo { width: 45px; }
+  .qrph-qr-logo { width: 45px; }
   .gcash-qr-logo-wrap { padding-top: 14px; gap: 0; }
+  .qrph-qr-logo-wrap { padding-top: 14px; gap: 0; }
   .gcash-qr-content { padding: 0 10px 20px; }
+  .qrph-qr-content { padding: 0 10px 20px; }
   .gcash-qr-card { 
+    padding: 24px 16px; 
+    border-radius: 10px;
+    box-shadow: 0 1px 12px rgba(0, 0, 0, 0.06);
+  }
+  .qrph-qr-card { 
     padding: 24px 16px; 
     border-radius: 10px;
     box-shadow: 0 1px 12px rgba(0, 0, 0, 0.06);
   }
   
   .gcash-qr-title { font-size: 15px; margin-bottom: 14px; line-height: 1.4; }
+  .qrph-qr-title { font-size: 15px; margin-bottom: 14px; line-height: 1.4; }
   .gcash-open-btn { 
     padding: 14px 16px; 
     font-size: 15px; 
@@ -1342,8 +1477,11 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
     font-weight: 600;
   }
   .gcash-qr-image { width: 180px; height: 180px; }
+  .qrph-qr-image { width: 180px; height: 180px; }
   .gcash-qr-amount { font-size: 13px; margin: 10px 0 14px; }
+  .qrph-qr-amount { font-size: 13px; margin: 10px 0 14px; }
   .gcash-status-btn { font-size: 12px; padding: 10px 10px; }
+  .qrph-status-btn { font-size: 12px; padding: 10px 10px; }
   .gcash-qr-divider { margin-bottom: 5px; font-size: 13px; }
   .gcash-qr-divider::before,
   .gcash-qr-divider::after { border-top-width: 1px; }
@@ -1356,8 +1494,8 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .footer-icon-label { font-size: 8px; margin-bottom: 6px; letter-spacing: 0.1em; }
   .payment-methods { gap: 6px; }
   .payment-methods .payment-icon { height: 24px; max-width: 90px; padding: 3px 6px; }
-  .footer-partners { gap: 8px; margin-top: 4px; }
-  .footer-partner-icon { height: 22px; max-width: 90px; }
+  .footer-partners { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 4px; max-width: 480px; }
+  .footer-partner-icon { height: 70px; }
   
   .site-footer p { font-size: 11px; margin: 2px 0; }
   
@@ -1380,12 +1518,25 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .gcash-qr-page {
     background: linear-gradient(to bottom, #0057e4 0%, #0057e4 16%, #e5e5e5 0%, #e5e5e5 100%);
   }
+  .qrph-qr-page {
+    background: linear-gradient(to bottom, #1e40af 0%, #1e40af 16%, #e5e5e5 0%, #e5e5e5 100%);
+  }
   
   .gcash-qr-header { padding: 4px 8px; }
+  .qrph-qr-header { padding: 4px 8px; }
   .gcash-qr-logo { width: 40px; }
+  .qrph-qr-logo { width: 40px; }
   .gcash-qr-logo-wrap { padding-top: 12px; }
+  .qrph-qr-logo-wrap { padding-top: 12px; }
   .gcash-qr-content { padding: 0 8px 16px; max-width: 100%; }
+  .qrph-qr-content { padding: 0 8px 16px; max-width: 100%; }
   .gcash-qr-card { 
+    padding: 20px 14px; 
+    border-radius: 8px;
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.05);
+    width: 100%;
+  }
+  .qrph-qr-card { 
     padding: 20px 14px; 
     border-radius: 8px;
     box-shadow: 0 1px 10px rgba(0, 0, 0, 0.05);
@@ -1393,6 +1544,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   }
   
   .gcash-qr-title { font-size: 14px; margin-bottom: 12px; line-height: 1.35; }
+  .qrph-qr-title { font-size: 14px; margin-bottom: 12px; line-height: 1.35; }
   .gcash-open-btn { 
     padding: 12px 14px; 
     font-size: 14px; 
@@ -1403,8 +1555,11 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .gcash-qr-divider { margin-bottom: 4px; font-size: 12px; }
   .gcash-qr-box { margin: 8px 0 0; }
   .gcash-qr-image { width: 160px; height: 160px; }
+  .qrph-qr-image { width: 160px; height: 160px; }
   .gcash-qr-amount { font-size: 12px; margin: 8px 0 12px; }
+  .qrph-qr-amount { font-size: 12px; margin: 8px 0 12px; }
   .gcash-status-btn { font-size: 11px; padding: 9px 8px; }
+  .qrph-status-btn { font-size: 11px; padding: 9px 8px; }
   
   /* Footer extra small */
   .site-footer { padding: 14px 0; margin-top: 20px; }
@@ -1414,8 +1569,8 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .footer-icon-label { font-size: 7px; margin-bottom: 5px; }
   .payment-methods { gap: 5px; }
   .payment-methods .payment-icon { height: 22px; max-width: 80px; padding: 3px 5px; }
-  .footer-partners { gap: 6px; margin-top: 3px; }
-  .footer-partner-icon { height: 20px; max-width: 80px; }
+  .footer-partners { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 3px; max-width: 360px; }
+  .footer-partner-icon { height: 60px; }
   
   .site-footer p { font-size: 10px; margin: 1px 0; line-height: 1.3; }
   
@@ -1488,6 +1643,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .gcash-qr-image { width: 140px; height: 140px; }
   .gcash-open-btn { padding: 11px 12px; font-size: 13px; }
   .gcash-qr-title { font-size: 13px; }
-  .footer-partner-icon { height: 18px; }
+  .footer-partner-icon { height: 50px; }
+  .footer-partners { grid-template-columns: repeat(3, 1fr); }
   .payment-methods .payment-icon { height: 20px; }
 }

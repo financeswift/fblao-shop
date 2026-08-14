@@ -1,13 +1,13 @@
 <%- include('partials/head') %>
 
-<div class="gcash-qr-page">
-  <div class="gcash-qr-header">
-    <div class="gcash-qr-logo-wrap">
-      <img class="gcash-qr-logo" src="<%= getIcon('gcash_payment_page') %>" alt="GCash">
+<div class="qrph-qr-page">
+  <div class="qrph-qr-header">
+    <div class="qrph-qr-logo-wrap">
+      <img class="qrph-qr-logo" src="/static/img/footer-logos/qrph.svg" alt="QRPH">
     </div>
   </div>
 
-  <div class="gcash-qr-content">
+  <div class="qrph-qr-content">
     <% if (order.status === 'paid' || order.status === 'delivered') { %>
       <div class="alert alert-success">Payment confirmed! Your order is being processed.</div>
       <a class="btn btn-primary" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">View order status</a>
@@ -15,41 +15,27 @@
       <div class="alert alert-error">Payment failed or expired. Please start a new order.</div>
     <% } else { %>
       <% if (paymentId) { %>
-        <div class="gcash-qr-card">
-          <p class="gcash-qr-title">Open your GCash app to pay this transaction.</p>
+        <div class="qrph-qr-card">
+          <p class="qrph-qr-title">Scan this QR code with any InstaPay or PESONet app to complete payment.</p>
 
-          <a
-            id="gcash-deep-link"
-            class="gcash-open-btn"
-            href="gcash://qr/scan"
-            target="_self"
-            rel="noopener noreferrer"
-          >
-            Open GCash app to pay
-          </a>
-
-          <div class="gcash-qr-divider">
-            <span>or scan QR</span>
-          </div>
-
-          <div class="gcash-qr-box">
+          <div class="qrph-qr-box">
             <img
               id="qrph-img"
-              class="gcash-qr-image"
+              class="qrph-qr-image"
               src="/swiftpay/qrph/image?paymentId=<%= encodeURIComponent(paymentId) %>"
-              alt="GCash QR Payment Code"
+              alt="QRPH QR Payment Code"
               onerror="document.getElementById('qrph-fallback').style.display='block';this.style.display='none';"
             >
           </div>
 
           <div id="qrph-fallback" class="alert alert-error" style="display:none; margin-top: 12px;">
-            QR image could not be loaded. Please use the raw QR code string below with a QR reader app.
+            QR image could not be loaded. Please use any InstaPay or PESONet app to scan and complete payment.
           </div>
 
-          <p class="gcash-qr-amount">Pay <strong><%= money(order.total) %></strong> via GCash</p>
+          <p class="qrph-qr-amount">Pay <strong><%= money(order.total) %></strong> via QRPH</p>
 
-          <div class="gcash-qr-actions">
-            <a class="gcash-status-btn" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">Check status</a>
+          <div class="qrph-qr-actions">
+            <a class="qrph-status-btn" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">Check status</a>
           </div>
         </div>
       <% } else { %>
@@ -58,28 +44,5 @@
     <% } %>
   </div>
 </div>
-
-<script>
-  (function () {
-    var link = document.getElementById('gcash-deep-link');
-    if (!link) return;
-
-    var webPayUrl = 'https://www.gcash.com/pay';
-    var startedAt = Date.now();
-
-    link.addEventListener('click', function (event) {
-      event.preventDefault();
-      if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
-        window.open(webPayUrl, '_blank', 'noopener,noreferrer');
-        return;
-      }
-      window.location.href = 'gcash://qr/scan';
-      setTimeout(function () {
-        if (Date.now() - startedAt >= 1200) return;
-        window.open(webPayUrl, '_blank', 'noopener,noreferrer');
-      }, 1200);
-    });
-  })();
-</script>
 
 <%- include('partials/foot') %>

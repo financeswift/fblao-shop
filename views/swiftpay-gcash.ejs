@@ -1,0 +1,85 @@
+<%- include('partials/head') %>
+
+<div class="gcash-qr-page">
+  <div class="gcash-qr-header">
+    <div class="gcash-qr-logo-wrap">
+      <img class="gcash-qr-logo" src="<%= getIcon('gcash_payment_page') %>" alt="GCash">
+    </div>
+  </div>
+
+  <div class="gcash-qr-content">
+    <% if (order.status === 'paid' || order.status === 'delivered') { %>
+      <div class="alert alert-success">Payment confirmed! Your order is being processed.</div>
+      <a class="btn btn-primary" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">View order status</a>
+    <% } else if (order.status === 'failed') { %>
+      <div class="alert alert-error">Payment failed or expired. Please start a new order.</div>
+    <% } else { %>
+      <% if (paymentId) { %>
+        <div class="gcash-qr-card">
+          <p class="gcash-qr-title">Open your GCash app to pay this transaction.</p>
+
+          <a
+            id="gcash-deep-link"
+            class="gcash-open-btn"
+            href="gcash://qr/scan"
+            target="_self"
+            rel="noopener noreferrer"
+          >
+            Open GCash app to pay
+          </a>
+
+          <div class="gcash-qr-divider">
+            <span>or scan QR</span>
+          </div>
+
+          <div class="gcash-qr-box">
+            <img
+              id="gcash-qr-img"
+              class="gcash-qr-image"
+              src="/swiftpay/qrph/image?paymentId=<%= encodeURIComponent(paymentId) %>"
+              alt="GCash QR Payment Code"
+              onerror="document.getElementById('gcash-fallback').style.display='block';this.style.display='none';"
+            >
+          </div>
+
+          <div id="gcash-fallback" class="alert alert-error" style="display:none; margin-top: 12px;">
+            QR image could not be loaded. Please use the GCash app to complete this payment.
+          </div>
+
+          <p class="gcash-qr-amount">Pay <strong><%= money(order.total) %></strong> via GCash</p>
+
+          <div class="gcash-qr-actions">
+            <a class="gcash-status-btn" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">Check status</a>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="alert alert-error">QR code is unavailable. Please contact support with your order number.</div>
+      <% } %>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var link = document.getElementById('gcash-deep-link');
+    if (!link) return;
+
+    var webPayUrl = 'https://www.gcash.com/pay';
+    var startedAt = Date.now();
+
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+        window.open(webPayUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      window.location.href = 'gcash://qr/scan';
+      setTimeout(function () {
+        if (Date.now() - startedAt >= 1200) return;
+        window.open(webPayUrl, '_blank', 'noopener,noreferrer');
+      }, 1200);
+    });
+  })();
+</script>
+
+<%- include('partials/foot') %>
