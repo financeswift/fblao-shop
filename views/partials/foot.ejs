@@ -10,10 +10,10 @@
       <span class="shining-gold horse-tagline">BlackHorse</span>
     </div>
 
-    <!-- Payment Methods (User Uploaded) -->
+    <!-- 支付方式 (User Uploaded) -->
     <% if (footerMethods.length > 0) { %>
     <div class="footer-icon-group">
-      <span class="footer-icon-label">Payment Methods</span>
+      <span class="footer-icon-label">支付方式</span>
       <div class="payment-methods">
         <% footerMethods.forEach(function(m){ %>
           <img class="payment-icon" src="<%= m.icon_url %>" alt="<%= escapeHtml(m.name) %>" title="<%= escapeHtml(m.name) %>">
@@ -23,7 +23,7 @@
     <% } %>
     <!-- Partner Banks & Payment Providers -->
     <div class="footer-icon-group">
-      <span class="footer-icon-label">Accepted Payment Partners</span>
+      <span class="footer-icon-label">合作支付渠道</span>
       <div class="footer-partners">
         <!-- Philippine Banks -->
         <img class="footer-partner-icon" src="/static/img/footer-logos/bpi@sm.png" alt="BPI" title="BPI">
@@ -34,7 +34,7 @@
         <img class="footer-partner-icon" src="/static/img/footer-logos/union-bank-of-the-philippines@sm.png" alt="Union Bank" title="Union Bank">
         <img class="footer-partner-icon" src="/static/img/footer-logos/landbank@sm.png" alt="Landbank" title="Landbank">
         
-        <!-- E-Wallets & Payment Methods -->
+        <!-- E-Wallets & 支付方式 -->
         <img class="footer-partner-icon" src="/static/img/footer-logos/maya-alt.png" alt="Maya" title="Maya">
         <img class="footer-partner-icon" src="/static/img/footer-logos/gcash@selection.png" alt="GCash" title="GCash">
         <img class="footer-partner-icon" src="/static/img/footer-logos/qrph.svg" alt="QRPH" title="QRPH">

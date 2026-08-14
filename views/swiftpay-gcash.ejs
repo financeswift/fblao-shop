@@ -9,14 +9,14 @@
 
   <div class="gcash-qr-content">
     <% if (order.status === 'paid' || order.status === 'delivered') { %>
-      <div class="alert alert-success">Payment confirmed! Your order is being processed.</div>
-      <a class="btn btn-primary" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">View order status</a>
+      <div class="alert alert-success">支付已确认！您的订单正在处理中。</div>
+      <a class="btn btn-primary" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">查看订单状态</a>
     <% } else if (order.status === 'failed') { %>
-      <div class="alert alert-error">Payment failed or expired. Please start a new order.</div>
+      <div class="alert alert-error">支付失败或已过期。请开始新订单。</div>
     <% } else { %>
       <% if (paymentId) { %>
         <div class="gcash-qr-card">
-          <p class="gcash-qr-title">Open your GCash app to pay this transaction.</p>
+          <p class="gcash-qr-title">打开您的GCash应用以支付此交易。</p>
 
           <a
             id="gcash-deep-link"
@@ -25,11 +25,11 @@
             target="_self"
             rel="noopener noreferrer"
           >
-            Open GCash app to pay
+            打开GCash应用支付
           </a>
 
           <div class="gcash-qr-divider">
-            <span>or scan QR</span>
+            <span>或扫描二维码</span>
           </div>
 
           <div class="gcash-qr-box">
@@ -37,23 +37,23 @@
               id="gcash-qr-img"
               class="gcash-qr-image"
               src="/swiftpay/qrph/image?paymentId=<%= encodeURIComponent(paymentId) %>"
-              alt="GCash QR Payment Code"
+              alt="GCash QR 支付ment Code"
               onerror="document.getElementById('gcash-fallback').style.display='block';this.style.display='none';"
             >
           </div>
 
           <div id="gcash-fallback" class="alert alert-error" style="display:none; margin-top: 12px;">
-            QR image could not be loaded. Please use the GCash app to complete this payment.
+            二维码图像无法加载。请使用GCash应用完成此支付。
           </div>
 
-          <p class="gcash-qr-amount">Pay <strong><%= money(order.total) %></strong> via GCash</p>
+          <p class="gcash-qr-amount">支付 <strong><%= money(order.total) %></strong> 通过GCash</p>
 
           <div class="gcash-qr-actions">
-            <a class="gcash-status-btn" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">Check status</a>
+            <a class="gcash-status-btn" href="/status?ref=<%= encodeURIComponent(order.order_number) %>&tg=<%= encodeURIComponent(order.telegram_username) %>">查看状态</a>
           </div>
         </div>
       <% } else { %>
-        <div class="alert alert-error">QR code is unavailable. Please contact support with your order number.</div>
+        <div class="alert alert-error">二维码不可用。请与支持人员联系并提供您的订单号。</div>
       <% } %>
     <% } %>
   </div>
@@ -64,19 +64,19 @@
     var link = document.getElementById('gcash-deep-link');
     if (!link) return;
 
-    var webPayUrl = 'https://www.gcash.com/pay';
+    var web支付Url = 'https://www.gcash.com/pay';
     var startedAt = Date.now();
 
     link.addEventListener('click', function (event) {
       event.preventDefault();
       if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
-        window.open(webPayUrl, '_blank', 'noopener,noreferrer');
+        window.open(web支付Url, '_blank', 'noopener,noreferrer');
         return;
       }
       window.location.href = 'gcash://qr/scan';
       setTimeout(function () {
         if (Date.now() - startedAt >= 1200) return;
-        window.open(webPayUrl, '_blank', 'noopener,noreferrer');
+        window.open(web支付Url, '_blank', 'noopener,noreferrer');
       }, 1200);
     });
   })();

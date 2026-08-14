@@ -5,54 +5,54 @@
   <div class="instructions-modal">
     <button class="instructions-close" id="instructionsClose" aria-label="Close">&times;</button>
     <div class="instructions-content">
-      <h2>Welcome to BM Shop</h2>
-      <p class="instructions-subtitle">Premium Accounts & Digital Products</p>
+      <h2>欢迎来到BM店铺</h2>
+      <p class="instructions-subtitle">优质账户和数字产品</p>
       
       <div class="instructions-section">
-        <h3>📋 How to Buy</h3>
+        <h3>📋 如何购买</h3>
         <ol class="instructions-list">
-          <li>Browse our product categories (Facebook, Twitter, YouTube, TikTok, Apple ID, etc.)</li>
-          <li>Click "Buy Now" on any product to open the purchase form</li>
-          <li>Enter your Telegram username for order delivery</li>
-          <li>Select quantity and choose your payment method</li>
-          <li>Complete payment and receive your account details via Telegram</li>
+          <li>浏览我们的商品分类（Facebook、Twitter、YouTube、TikTok、Apple ID等）</li>
+          <li>点击任何商品上的"立即购买"打开购买表单</li>
+          <li>输入您的电报用户名用于订单发货</li>
+          <li>选择数量并选择支付方式</li>
+          <li>完成支付后通过电报接收您的账户详情</li>
         </ol>
       </div>
 
       <div class="instructions-section">
-        <h3>💳 Payment Methods</h3>
+        <h3>💳 支付方式</h3>
         <ul class="instructions-list">
-          <li>Alipay (支付宝) - Fast and secure</li>
-          <li>WeChat Pay (微信支付) - Popular in China</li>
-          <li>Other digital payment options available</li>
+          <li>支付宝 (Alipay) - 快速安全</li>
+          <li>微信支付 (WeChat Pay) - 中国流行支付方式</li>
+          <li>其他数字支付选项可用</li>
         </ul>
       </div>
 
       <div class="instructions-section">
-        <h3>✅ What You Get</h3>
+        <h3>✅ 您将获得</h3>
         <ul class="instructions-list">
-          <li>Real, active accounts with full login credentials</li>
-          <li>Account age, follower count, and verification status included</li>
-          <li>Email and password provided for full account control</li>
-          <li>Instant delivery after payment confirmation</li>
+          <li>真实可用的账户，包含完整的登录凭证</li>
+          <li>账户年龄、粉丝数量和认证状态</li>
+          <li>提供邮箱和密码以获得完全账户控制权</li>
+          <li>付款确认后即时发货</li>
         </ul>
       </div>
 
       <div class="instructions-section">
-        <h3>🔍 After Purchase</h3>
+        <h3>🔍 购买后</h3>
         <ul class="instructions-list">
-          <li>Use the "Order Status" page to check your delivery anytime</li>
-          <li>Enter your Telegram username and order number to lookup</li>
-          <li>Your account details will be displayed on completion</li>
+          <li>使用"订单查询"页面随时检查您的发货状态</li>
+          <li>输入电报用户名和订单号进行查询</li>
+          <li>完成交易后您的账户详情将显示在此页面</li>
         </ul>
       </div>
 
       <div class="instructions-section">
-        <h3>📞 Support</h3>
-        <p>For any questions or issues, contact us via Telegram. Our team is available 24/7 to assist you.</p>
+        <h3>📞 客服支持</h3>
+        <p>如有任何问题，请通过电报联系我们。我们的团队24/7在线为您服务。</p>
       </div>
 
-      <button type="button" class="btn btn-block" id="instructionsConfirm">Got it, let's shop!</button>
+      <button type="button" class="btn btn-block" id="instructionsConfirm">好的，开始购物！</button>
     </div>
   </div>
 </div>
@@ -81,59 +81,59 @@
 <% } %>
 
 <% if (!catalog.length) { %>
-  <div class="empty-state">No products yet. The shop owner can add products in the <a href="/admin">Admin panel</a>.</div>
+  <div class="empty-state">暂无商品。店铺管理员可以在<a href="/admin">管理面板</a>中添加商品。</div>
 <% } %>
 
 <% if (catalog.length) { %>
   <section class="catalog-filters card">
     <div class="catalog-filters-header">
       <div>
-        <h2>Browse Products / 商品筛选</h2>
-        <p class="muted">Search by product, description, or category, then narrow by price and stock.</p>
+        <h2>浏览商品</h2>
+        <p class="muted">按商品名称、描述或分类搜索，然后按价格和库存进行筛选。</p>
       </div>
-      <button type="button" class="btn btn-sm" id="catalogFilterClear">Clear filters</button>
+      <button type="button" class="btn btn-sm" id="catalogFilterClear">清除筛选</button>
     </div>
 
     <form class="catalog-filter-grid" id="catalogFilters" autocomplete="off">
       <label class="field">
-        <span>Search / 搜索</span>
-        <input type="text" id="catalogSearch" placeholder="Search products or categories">
+        <span>搜索</span>
+        <input type="text" id="catalogSearch" placeholder="搜索商品或分类">
       </label>
       <label class="field">
-        <span>Min price / 最低价</span>
+        <span>最低价</span>
         <input type="number" id="catalogMinPrice" min="0" step="0.01" placeholder="0.00">
       </label>
       <label class="field">
-        <span>Max price / 最高价</span>
+        <span>最高价</span>
         <input type="number" id="catalogMaxPrice" min="0" step="0.01" placeholder="9999.00">
       </label>
       <label class="catalog-checkbox">
         <input type="checkbox" id="catalogInStock">
-        <span>Show only in-stock items / 仅看有货</span>
+        <span>仅看有货</span>
       </label>
     </form>
 
     <div class="catalog-filter-summary" id="catalogFilterSummary">
-      Showing all <strong><%= catalog.reduce(function(total, cat){ return total + cat.products.length }, 0) %></strong> products.
+      共显示 <strong>*</strong> 件商品
     </div>
   </section>
 
-  <div class="empty-state" id="catalogFilterEmpty" hidden>No products match your current filters. / 当前筛选下暂无商品。</div>
+  <div class="empty-state" id="catalogFilterEmpty" hidden>当前筛选下暂无商品。</div>
 <% } %>
 
 <% catalog.forEach(function(cat){ %>
   <section class="category-block" data-category-block data-category-name="<%= cat.name.toLowerCase() %>">
     <h2 class="category-title">
       <span><%= cat.name %></span>
-      <span class="muted" style="font-size: 11px; font-weight: normal; text-transform: uppercase; letter-spacing: 0.05em;"><%= cat.products.length %> Products</span>
+      <span class="muted" style="font-size: 11px; font-weight: normal; text-transform: uppercase; letter-spacing: 0.05em;"><%= cat.products.length %> 件商品</span>
     </h2>
     <div class="table-wrap">
       <table class="product-table">
         <thead>
           <tr>
-            <th class="col-name">Product</th>
-            <th class="col-price">Price</th>
-            <th class="col-stock">Stock</th>
+            <th class="col-name">商品</th>
+            <th class="col-price">价格</th>
+            <th class="col-stock">库存</th>
             <th class="col-buy"></th>
           </tr>
         </thead>
@@ -188,10 +188,10 @@
                           data-rental-7d="<%= p.rental_7day_price || 0 %>"
                           data-rental-30d="<%= p.rental_30day_price || 0 %>">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                    Buy Now
+                    立即购买
                   </button>
                 <% } else { %>
-                  <button class="btn btn-disabled" disabled>Out of Stock</button>
+                  <button class="btn btn-disabled" disabled>已售完</button>
                 <% } %>
               </td>
             </tr>
@@ -211,8 +211,8 @@
     <!-- Buy/Rent toggle -->
     <div class="product-type-selector">
       <div class="type-toggle">
-        <button type="button" class="type-option active" data-type="buy" id="typeOptionBuy">Buy</button>
-        <button type="button" class="type-option" data-type="rent" id="typeOptionRent">Rent</button>
+        <button type="button" class="type-option active" data-type="buy" id="typeOptionBuy">购买</button>
+        <button type="button" class="type-option" data-type="rent" id="typeOptionRent">租赁</button>
       </div>
     </div>
     
@@ -226,40 +226,40 @@
 
       <!-- Rental Period Selector -->
       <div class="rental-period-selector" id="rentalPeriodSection">
-        <label class="rental-period-label">Select Rental Period</label>
+        <label class="rental-period-label">选择租赁期</label>
         <div class="rental-periods">
           <button type="button" class="rental-period-btn active" data-days="1" data-price="0">
-            1 Day
+            1 天
             <small id="rental-price-1d"></small>
           </button>
           <button type="button" class="rental-period-btn" data-days="7" data-price="0">
-            7 Days
+            7 天
             <small id="rental-price-7d"></small>
           </button>
           <button type="button" class="rental-period-btn" data-days="30" data-price="0">
-            30 Days
+            30 天
             <small id="rental-price-30d"></small>
           </button>
         </div>
       </div>
 
       <label class="field">
-        <span>Telegram Username / 电报用户名</span>
+        <span>电报用户名</span>
         <input type="text" name="telegram_username" id="m-telegram" required placeholder="@username" value="<%= user ? user.username : '' %>">
-        <small class="muted">Your order details and delivery will be linked to this username. / 订单和发货内容会绑定到这个电报用户名。</small>
+        <small class="muted">您的订单详情和发货内容将绑定到此用户名</small>
       </label>
 
       <div class="field-row">
         <label class="field">
-          <span>Quantity / 数量</span>
+          <span>数量</span>
           <input type="number" name="quantity" id="m-qty" value="1" min="1" required>
         </label>
         <div class="field">
-          <span>Unit price / 单价</span>
+          <span>单价</span>
           <div class="readout" id="m-unit"></div>
         </div>
         <div class="field">
-          <span>Total / 合计</span>
+          <span>合计</span>
           <div class="readout total" id="m-total"></div>
         </div>
       </div>
@@ -267,11 +267,11 @@
       <!-- SIM Type Selector (if product has SIM/eSIM accounts) -->
       <div id="simTypeSection" style="display: none;">
         <label class="field">
-          <span>Delivery Type / 配送类型</span>
+          <span>配送类型</span>
           <select name="sim_type_selected" id="m-sim-type" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--panel);" required>
-            <option value="">-- Choose SIM Type --</option>
-            <option value="SIM">SIM Card (Requires Delivery Address / 需要填地址)</option>
-            <option value="eSIM">eSIM (Digital Instant / 数字即时)</option>
+            <option value="">-- 选择SIM类型 --</option>
+            <option value="SIM">SIM卡（需填收货地址）</option>
+            <option value="eSIM">eSIM（数字即时）</option>
           </select>
         </label>
       </div>
@@ -279,15 +279,15 @@
       <!-- Delivery Address (shown only when SIM type is selected as "SIM") -->
       <div id="deliveryAddressSection" style="display: none;">
         <label class="field">
-          <span>Delivery Address / 收货地址</span>
-          <textarea name="delivery_address" id="m-delivery-address" style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--panel); font-family: system-ui, -apple-system, sans-serif; resize: vertical;" placeholder="Full address for SIM card delivery / 完整收货地址"></textarea>
-          <small class="muted">Your physical address where the SIM card will be delivered. / 收卡地址</small>
+          <span>收货地址</span>
+          <textarea name="delivery_address" id="m-delivery-address" style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--panel); font-family: system-ui, -apple-system, sans-serif; resize: vertical;" placeholder="完整收货地址"></textarea>
+          <small class="muted">您的物理地址，SIM卡将被送达此地址</small>
         </label>
       </div>
 
       <!-- Payment method picker -->
       <div class="pay-method-picker">
-        <p class="pay-method-picker-label">Choose payment method / 选择支付方式</p>
+        <p class="pay-method-picker-label">选择支付方式</p>
 
         <% if (swiftpayEnabled) { %>
           <%# SwiftPay e-Wallet Methods (Direct payment, similar to how Maya works) %>
@@ -295,7 +295,7 @@
             <img class="pay-method-logo" src="<%= getIcon('maya') %>" alt="Maya">
             <span class="pay-method-info">
               <strong>Maya</strong>
-              <small>Pay with Maya e-wallet / 用 Maya 钱包支付</small>
+              <small>使用Maya钱包支付</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
@@ -315,7 +315,7 @@
             </span>
             <span class="pay-method-info">
               <strong>QRPH</strong>
-              <small>Scan QR code (InstaPay / PESONet) / 扫码支付</small>
+              <small>扫码支付</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
@@ -381,7 +381,7 @@
             <img class="pay-method-logo" src="<%= getIcon('netbank') %>" alt="NetBank">
             <span class="pay-method-info">
               <strong>NetBank</strong>
-              <small>NetBank Online Payments</small>
+              <small>NetBank在线支付</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
@@ -389,7 +389,7 @@
             <img class="pay-method-logo" src="<%= getIcon('vbank') %>" alt="VBank">
             <span class="pay-method-info">
               <strong>Virtual Bank</strong>
-              <small>VBank Online Payments</small>
+              <small>VBank在线支付</small>
             </span>
             <svg class="pay-method-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>

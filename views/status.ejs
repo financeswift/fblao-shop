@@ -1,15 +1,15 @@
 <%- include('partials/head') %>
 
 <div class="card narrow">
-  <h2>Order Status / 订单查询</h2>
-  <p class="muted">Enter your Telegram username and order number to check your order status and view delivered product details after payment. / 输入电报用户名和订单号即可查询订单状态，并在付款后查看发货内容。</p>
+  <h2>订单查询</h2>
+  <p class="muted">输入电报用户名和订单号即可查询订单状态，并在付款后查看发货内容。</p>
   <form method="POST" action="/status" class="stack">
     <label class="field">
-      <span>Telegram Username / 电报用户名</span>
+      <span>电报用户名</span>
       <input type="text" name="telegram_username" required placeholder="@username" value="<%= user ? user.username : '' %>">
     </label>
     <label class="field">
-      <span>Order number / 订单号</span>
+      <span>订单号</span>
       <input type="text" name="order_number" required placeholder="LK-XXXXXXXX">
     </label>
 
@@ -19,7 +19,7 @@
       </div>
     <% } %>
 
-    <button type="submit" class="btn btn-primary">Check status / 查询订单</button>
+    <button type="submit" class="btn btn-primary">查询订单</button>
   </form>
 
   <% if (error) { %>

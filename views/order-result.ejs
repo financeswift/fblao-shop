@@ -2,20 +2,20 @@
 
 <div class="card narrow">
   <% if (order.status === 'delivered') { %>
-    <div class="status-pill status-delivered">Delivered</div>
-    <h2>Thank you! Your order is complete. / 订单已完成</h2>
+    <div class="status-pill status-delivered">已发货</div>
+    <h2>谢谢！订单已完成</h2>
   <% } else if (order.status === 'paid') { %>
     <div class="status-pill status-paid">Paid</div>
-    <h2>Payment received — preparing your delivery. / 已收款，正在发货</h2>
+    <h2>付款已收，正在发货准备</h2>
   <% } else if (order.status === 'failed') { %>
     <div class="status-pill status-failed">Payment failed</div>
-    <h2>We could not confirm your payment. / 付款未确认</h2>
+    <h2>无法确认您的付款</h2>
   <% } else if (order.payment_type === 'manual') { %>
     <div class="status-pill status-pending">Awaiting payment</div>
-    <h2>Almost there — please complete your payment. / 请完成付款</h2>
+    <h2>请完成付款</h2>
   <% } else { %>
     <div class="status-pill status-pending">Pending</div>
-    <h2>Order received. / 订单已创建</h2>
+    <h2>订单已创建</h2>
   <% } %>
 
   <table class="kv">
@@ -38,10 +38,10 @@
     <tr><th>Quantity</th><td><%= order.quantity %></td></tr>
     <% if (order.sim_type_selected) { %>
       <tr>
-        <th>SIM Type</th>
+        <th>SIM卡类型</th>
         <td>
           <span style="display:inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; color:white; background: <%= order.sim_type_selected === 'eSIM' ? '#7c3aed' : '#2563eb' %>;">
-            <%= order.sim_type_selected === 'eSIM' ? 'eSIM' : 'Physical SIM' %>
+            <%= order.sim_type_selected === 'eSIM' ? 'eSIM' : '物理SIM' %>
           </span>
         </td>
       </tr>
@@ -52,34 +52,34 @@
     <tr><th>Total</th><td><%= money(order.total) %></td></tr>
   </table>
 
-  <p class="muted">How you receive your product: after payment is confirmed, the delivered account or product details will appear on this page. You can check it again later with your Telegram username and order number. / 收货方式：付款确认后，发货的账号或商品内容会显示在此页面。之后也可以使用电报用户名和订单号再次查询。</p>
+  <p class="muted">收货方式：付款确认后，发货的账号或商品内容会显示在此页面。之后也可以使用电报用户名和订单号再次查询。</p>
 
   <% if (order.payment_type === 'manual' && (order.status === 'pending') && manualMethod) { %>
     <div class="instructions">
-      <h3>Payment instructions / 支付说明 — <%= manualMethod.name %></h3>
+      <h3>支付说明 — <%= manualMethod.name %></h3>
       <div class="instructions-body"><%- nl2br(manualMethod.instructions) %></div>
-      <p class="ref-note">Use your order number <strong><%= order.order_number %></strong> as the payment reference.</p>
+      <p class="ref-note">使用您的订单号 <strong><%= order.order_number %></strong> 作为支付参考。</p>
     </div>
   <% } %>
 
   <% if (order.status === 'delivered' && order.delivered_content) { %>
     <% 
       const deliveryText = order.delivered_content || '';
-      const esimQrMatch = deliveryText.match(/eSIM QR Code:\s*([A-Za-z0-9+/=\r\n]+)/i);
+      const esimQrMatch = deliveryText.match(/eSIM二维码:\s*([A-Za-z0-9+/=\r\n]+)/i);
       const esimQrData = esimQrMatch ? esimQrMatch[1].replace(/\s+/g, '') : '';
     %>
     <div class="delivery">
-      <h3>Your delivery / 发货内容</h3>
+      <h3>发货内容</h3>
       <% if (esimQrData) { %>
         <div style="margin: 16px 0; padding: 18px; border: 1px solid rgba(124,58,237,0.45); border-radius: 12px; background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(37,99,235,0.06)); box-shadow: 0 8px 24px rgba(124,58,237,0.08);">
-          <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; font-weight: 700;">eSIM QR Code</div>
+          <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; font-weight: 700;">eSIM二维码</div>
           <div style="display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
-            <img src="data:image/png;base64,<%= esimQrData %>" alt="eSIM QR Code" style="max-width: 170px; width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--border); background: white; padding: 10px;">
+            <img src="data:image/png;base64,<%= esimQrData %>" alt="eSIM二维码" style="max-width: 170px; width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--border); background: white; padding: 10px;">
             <div style="flex: 1; min-width: 180px;">
               <div style="font-size: 13px; color: var(--text); margin-bottom: 10px; line-height: 1.5;">Scan this QR code in your phone’s eSIM settings to activate the digital SIM immediately.</div>
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <a class="btn btn-sm btn-primary" href="data:image/png;base64,<%= esimQrData %>" download="esim-qr.png">Download QR</a>
-                <button class="btn btn-sm btn-light" type="button" onclick="navigator.clipboard && navigator.clipboard.writeText('<%= escapeHtml(deliveryText.replace(/\n/g, '\\n')) %>')">Copy details</button>
+                <a class="btn btn-sm btn-primary" href="data:image/png;base64,<%= esimQrData %>" download="esim-qr.png">下载二维码</a>
+                <button class="btn btn-sm btn-light" type="button" onclick="navigator.clipboard && navigator.clipboard.writeText('<%= escapeHtml(deliveryText.replace(/\n/g, '\\n')) %>')">复制详情</button>
               </div>
             </div>
           </div>
@@ -88,12 +88,12 @@
       <pre class="delivery-body"><%= order.delivered_content %></pre>
     </div>
   <% } else if (order.status === 'paid') { %>
-    <p class="muted">Your payment is confirmed. Your goods will appear here soon. / 付款已确认，商品内容将很快显示在这里。</p>
+    <p class="muted">付款已确认，商品内容将很快显示在这里。</p>
   <% } %>
 
   <div class="actions">
-    <a class="btn" href="/status">Check this order later / 稍后查询</a>
-    <a class="btn btn-light" href="/">Back to shop / 返回商店</a>
+    <a class="btn" href="/status">稍后查询</a>
+    <a class="btn btn-light" href="/">返回商店</a>
   </div>
 </div>
 
