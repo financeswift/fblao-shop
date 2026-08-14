@@ -921,7 +921,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 .footer-partner-icon {
   display: block;
   width: 100%;
-  height: 100px;
+  height: 50px;
   object-fit: contain;
   transition: transform 0.2s ease, filter 0.2s ease;
   opacity: 0.85;
@@ -1429,7 +1429,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .payment-methods { gap: 8px; }
   .payment-methods .payment-icon { height: 26px; max-width: 100px; padding: 4px 8px; }
   .footer-partners { grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 6px; }
-  .footer-partner-icon { height: 80px; }
+  .footer-partner-icon { height: 45px; }
   
   .site-footer p { font-size: 12px; margin: 3px 0; }
 }
@@ -1495,7 +1495,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .payment-methods { gap: 6px; }
   .payment-methods .payment-icon { height: 24px; max-width: 90px; padding: 3px 6px; }
   .footer-partners { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 4px; max-width: 480px; }
-  .footer-partner-icon { height: 70px; }
+  .footer-partner-icon { height: 40px; }
   
   .site-footer p { font-size: 11px; margin: 2px 0; }
   
@@ -1570,7 +1570,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .payment-methods { gap: 5px; }
   .payment-methods .payment-icon { height: 22px; max-width: 80px; padding: 3px 5px; }
   .footer-partners { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 3px; max-width: 360px; }
-  .footer-partner-icon { height: 60px; }
+  .footer-partner-icon { height: 35px; }
   
   .site-footer p { font-size: 10px; margin: 1px 0; line-height: 1.3; }
   
@@ -1643,7 +1643,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .gcash-qr-image { width: 140px; height: 140px; }
   .gcash-open-btn { padding: 11px 12px; font-size: 13px; }
   .gcash-qr-title { font-size: 13px; }
-  .footer-partner-icon { height: 50px; }
+  .footer-partner-icon { height: 30px; }
   .footer-partners { grid-template-columns: repeat(3, 1fr); }
   .payment-methods .payment-icon { height: 20px; }
 }
