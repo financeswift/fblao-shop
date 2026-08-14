@@ -110,6 +110,17 @@
                 <label class="field" style="flex: 0 0 auto;"><span>Auto-Deliver</span><input type="checkbox" name="auto_deliver" <%= p.auto_deliver ? 'checked' : '' %>></label>
                 <label class="field" style="flex: 0 0 auto;"><span>Active</span><input type="checkbox" name="active" <%= p.active ? 'checked' : '' %>></label>
               </div>
+              <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                  <input type="checkbox" id="is_rentable_<%= p.id %>" name="is_rentable" <%= p.is_rentable ? 'checked' : '' %> style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+                  <label for="is_rentable_<%= p.id %>" style="cursor: pointer; margin: 0; font-weight: 600; color: var(--text);">Enable Rental</label>
+                </div>
+                <div class="field-row">
+                  <label class="field"><span>1-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_1day_price" value="<%= p.rental_1day_price || 0 %>" min="0"></label>
+                  <label class="field"><span>7-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_7day_price" value="<%= p.rental_7day_price || 0 %>" min="0"></label>
+                  <label class="field"><span>30-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_30day_price" value="<%= p.rental_30day_price || 0 %>" min="0"></label>
+                </div>
+              </div>
               <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
                 <button class="btn btn-sm btn-primary" type="submit">Update Product</button>
                 <button type="button" class="btn btn-sm" onclick="this.closest('tr').style.display = 'none'">Cancel</button>
@@ -149,6 +160,17 @@
         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
           <input type="checkbox" name="active" checked style="width: 18px; height: 18px; accent-color: var(--accent);"> Active
         </label>
+      </div>
+    </div>
+    <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+        <input type="checkbox" id="is_rentable_new" name="is_rentable" style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+        <label for="is_rentable_new" style="cursor: pointer; margin: 0; font-weight: 600; color: var(--text);">Enable Rental</label>
+      </div>
+      <div class="field-row">
+        <label class="field"><span>1-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_1day_price" value="0" min="0"></label>
+        <label class="field"><span>7-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_7day_price" value="0" min="0"></label>
+        <label class="field"><span>30-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_30day_price" value="0" min="0"></label>
       </div>
     </div>
     <button class="btn btn-primary" type="submit" style="margin-top: 15px; padding: 12px 30px;">

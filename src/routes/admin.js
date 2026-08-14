@@ -311,7 +311,11 @@ router.post('/products', (req, res) => {
     active: !!req.body.active,
     sort_order: parseInt(req.body.sort_order, 10),
     auto_deliver: !!req.body.auto_deliver,
-    min_quantity: parseInt(req.body.min_quantity, 10) || 1
+    min_quantity: parseInt(req.body.min_quantity, 10) || 1,
+    is_rentable: !!req.body.is_rentable,
+    rental_1day_price: parseFloat(req.body.rental_1day_price) || 0,
+    rental_7day_price: parseFloat(req.body.rental_7day_price) || 0,
+    rental_30day_price: parseFloat(req.body.rental_30day_price) || 0
   });
   flash(req, 'Product added.');
   res.redirect('/admin/products');
@@ -326,7 +330,11 @@ router.post('/products/:id/update', (req, res) => {
     sort_order: parseInt(req.body.sort_order, 10),
     auto_deliver: !!req.body.auto_deliver,
     min_quantity: parseInt(req.body.min_quantity, 10) || 1,
-    stock: req.body.stock // Pass stock for manual updates
+    stock: req.body.stock, // Pass stock for manual updates
+    is_rentable: !!req.body.is_rentable,
+    rental_1day_price: parseFloat(req.body.rental_1day_price) || 0,
+    rental_7day_price: parseFloat(req.body.rental_7day_price) || 0,
+    rental_30day_price: parseFloat(req.body.rental_30day_price) || 0
   });
 
   if (req.body.action === 'quick_add' && req.body.quick_lines) {

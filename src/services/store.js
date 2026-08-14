@@ -40,7 +40,7 @@ const StoreService = {
 
   createProduct(data) {
     return db.prepare(
-      'INSERT INTO products (category_id, name, description, price, stock, active, sort_order, auto_deliver, min_quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO products (category_id, name, description, price, stock, active, sort_order, auto_deliver, min_quantity, is_rentable, rental_1day_price, rental_7day_price, rental_30day_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).run(
       data.category_id || null,
       data.name || 'Untitled',
@@ -50,13 +50,17 @@ const StoreService = {
       data.active ? 1 : 0,
       data.sort_order || 0,
       data.auto_deliver ? 1 : 0,
-      data.min_quantity || 1
+      data.min_quantity || 1,
+      data.is_rentable ? 1 : 0,
+      data.rental_1day_price || 0,
+      data.rental_7day_price || 0,
+      data.rental_30day_price || 0
     );
   },
 
   updateProduct(id, data) {
     const result = db.prepare(
-      'UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, active = ?, sort_order = ?, auto_deliver = ?, min_quantity = ? WHERE id = ?'
+      'UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, active = ?, sort_order = ?, auto_deliver = ?, min_quantity = ?, is_rentable = ?, rental_1day_price = ?, rental_7day_price = ?, rental_30day_price = ? WHERE id = ?'
     ).run(
       data.category_id || null,
       data.name || '',
@@ -66,6 +70,10 @@ const StoreService = {
       data.sort_order || 0,
       data.auto_deliver ? 1 : 0,
       data.min_quantity || 1,
+      data.is_rentable ? 1 : 0,
+      data.rental_1day_price || 0,
+      data.rental_7day_price || 0,
+      data.rental_30day_price || 0,
       id
     );
 
