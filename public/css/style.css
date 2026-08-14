@@ -1146,12 +1146,18 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
     padding: 14px;
   }
   .modal {
-    padding: 18px 14px 28px;
+    padding: 16px 12px 24px;
     border-radius: 16px 16px 0 0;
+    max-height: calc(95dvh - 20px);
   }
   .modal-title {
     font-size: 15px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
+    padding-right: 28px;
+  }
+  .modal-close {
+    top: 12px;
+    right: 12px;
   }
   .hero-chip {
     font-size: 11px;
@@ -1197,10 +1203,36 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
     padding: 6px 10px;
     font-size: 11px;
   }
+  .pay-method-picker {
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .pay-method-picker-label {
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
   .pay-method-btn {
-    padding: 10px 8px;
+    padding: 10px;
     font-size: 12px;
-    min-height: 50px;
+    min-height: 48px;
+    gap: 8px;
+  }
+  .pay-method-logo {
+    height: 26px;
+    min-width: 48px;
+    max-width: 80px;
+    padding: 2px 5px;
+  }
+  .pay-method-info strong {
+    font-size: 12px;
+  }
+  .pay-method-info small {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+  .pay-method-arrow {
+    width: 14px;
+    height: 14px;
   }
   .readout {
     font-size: 13px;
@@ -1214,6 +1246,13 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   .stock-ok, .stock-out {
     padding: 3px 8px;
     font-size: 10px;
+  }
+  .field {
+    margin-bottom: 10px;
+  }
+  .field > span {
+    font-size: 11px;
+    font-weight: 600;
   }
 }
 
@@ -1389,6 +1428,62 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 
 /* Ultra Small (< 360px) */
 @media (max-width: 359px) {
+  .modal {
+    padding: 12px 10px 20px;
+    border-radius: 14px 14px 0 0;
+    max-height: 96dvh;
+  }
+  .modal-title {
+    font-size: 13px;
+    margin-bottom: 10px;
+    padding-right: 26px;
+  }
+  .modal-close {
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
+    top: 10px;
+    right: 10px;
+  }
+  .pay-method-picker {
+    gap: 5px;
+    margin-bottom: 14px;
+  }
+  .pay-method-picker-label {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+  .pay-method-btn {
+    padding: 8px;
+    font-size: 11px;
+    min-height: 44px;
+    gap: 6px;
+  }
+  .pay-method-logo {
+    height: 24px;
+    min-width: 42px;
+    max-width: 70px;
+    padding: 2px 4px;
+  }
+  .pay-method-info strong {
+    font-size: 11px;
+  }
+  .pay-method-info small {
+    font-size: 9px;
+    line-height: 1.15;
+  }
+  .pay-method-arrow {
+    width: 12px;
+    height: 12px;
+    margin-left: auto;
+  }
+  .field > span {
+    font-size: 10px;
+  }
+  .readout {
+    font-size: 12px;
+    padding: 8px;
+  }
   .gcash-qr-logo { width: 36px; }
   .gcash-qr-image { width: 140px; height: 140px; }
   .gcash-open-btn { padding: 11px 12px; font-size: 13px; }
