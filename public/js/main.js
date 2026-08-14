@@ -141,6 +141,13 @@
       current.price = parseFloat(btn.getAttribute('data-price')) || 0;
       current.stock = parseInt(btn.getAttribute('data-stock'), 10) || 1;
       current.min = parseInt(btn.getAttribute('data-min'), 10) || 1;
+      
+      // Get rental data
+      const isRentable = parseInt(btn.getAttribute('data-is-rentable')) || 0;
+      const rental1d = parseFloat(btn.getAttribute('data-rental-1d')) || 0;
+      const rental7d = parseFloat(btn.getAttribute('data-rental-7d')) || 0;
+      const rental30d = parseFloat(btn.getAttribute('data-rental-30d')) || 0;
+      
       elProduct.textContent = btn.getAttribute('data-name');
       elProductId.value = btn.getAttribute('data-id');
       elQty.value = current.min;
@@ -148,6 +155,20 @@
       elQty.max = current.stock;
       recalc();
       
+      // Call the rental-aware modal function
+      if (window.showBuyModal) {
+        window.showBuyModal(
+          btn.getAttribute('data-id'),
+          btn.getAttribute('data-name'),
+          current.price,
+          current.stock,
+          current.min,
+          rental1d,
+          rental7d,
+          rental30d,
+          isRentable
+        );
+      }
       // Reset SIM type and delivery address fields
       if (elSimType) {
         elSimType.value = '';

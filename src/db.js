@@ -193,6 +193,29 @@ try { db.exec("ALTER TABLE orders ADD COLUMN sim_type_selected TEXT"); } catch(e
 // email is already nullable in the CREATE TABLE statement above.
 // SQLite doesn't support ALTER COLUMN, so we skip this migration.
 
+// Migrations for rental account support
+try { db.exec("ALTER TABLE products ADD COLUMN is_rentable INTEGER NOT NULL DEFAULT 0"); } catch(e){}
+try { db.exec("ALTER TABLE products ADD COLUMN rental_1day_price REAL DEFAULT 0"); } catch(e){}
+try { db.exec("ALTER TABLE products ADD COLUMN rental_7day_price REAL DEFAULT 0"); } catch(e){}
+try { db.exec("ALTER TABLE products ADD COLUMN rental_30day_price REAL DEFAULT 0"); } catch(e){}
+try { db.exec(`
+  CREATE TABLE IF NOT EXISTS rental_orders (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id        INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    rental_days     INTEGER NOT NULL,
+    rental_price    REAL NOT NULL,
+    rental_start_at TEXT NOT NULL DEFAULT (datetime('now')),
+    rental_end_at   TEXT NOT NULL,
+    returned_at     TEXT,
+    status          TEXT NOT NULL DEFAULT 'active',
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`); } catch(e){}
+try { db.exec("ALTER TABLE orders ADD COLUMN order_type TEXT DEFAULT 'buy'"); } catch(e){}
+try { db.exec("ALTER TABLE orders ADD COLUMN rental_id INTEGER REFERENCES rental_orders(id) ON DELETE SET NULL"); } catch(e){}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_rental_order ON rental_orders(order_id)"); } catch(e){}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_rental_status ON rental_orders(status, rental_end_at)"); } catch(e){}
+
 // Create triggers AFTER columns are added
 try { db.exec(`
   CREATE TRIGGER IF NOT EXISTS update_products_updated_at

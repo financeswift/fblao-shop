@@ -182,7 +182,11 @@
                           data-name="<%= escapeHtml(p.name) %>"
                           data-price="<%= p.price %>"
                           data-stock="<%= p.stock %>"
-                          data-min="<%= p.min_quantity || 1 %>">
+                          data-min="<%= p.min_quantity || 1 %>"
+                          data-is-rentable="<%= p.is_rentable || 0 %>"
+                          data-rental-1d="<%= p.rental_1day_price || 0 %>"
+                          data-rental-7d="<%= p.rental_7day_price || 0 %>"
+                          data-rental-30d="<%= p.rental_30day_price || 0 %>">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                     Buy Now
                   </button>
@@ -202,12 +206,42 @@
 <div class="modal-overlay" id="buyModal">
   <div class="modal">
     <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
-    <h3 class="modal-title">Buy <span id="m-product"></span></h3>
+    <h3 class="modal-title"><span id="m-product"></span></h3>
+    
+    <!-- Buy/Rent toggle -->
+    <div class="product-type-selector">
+      <div class="type-toggle">
+        <button type="button" class="type-option active" data-type="buy" id="typeOptionBuy">Buy</button>
+        <button type="button" class="type-option" data-type="rent" id="typeOptionRent">Rent</button>
+      </div>
+    </div>
+    
     <form method="POST" action="/order" id="buyForm">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="product_id" id="m-product-id">
       <input type="hidden" name="payment_type" id="m-payment-type">
       <input type="hidden" name="manual_method_id" id="m-manual-id">
+      <input type="hidden" name="order_type" id="m-order-type" value="buy">
+      <input type="hidden" name="rental_days" id="m-rental-days" value="0">
+
+      <!-- Rental Period Selector -->
+      <div class="rental-period-selector" id="rentalPeriodSection">
+        <label class="rental-period-label">Select Rental Period</label>
+        <div class="rental-periods">
+          <button type="button" class="rental-period-btn active" data-days="1" data-price="0">
+            1 Day
+            <small id="rental-price-1d"></small>
+          </button>
+          <button type="button" class="rental-period-btn" data-days="7" data-price="0">
+            7 Days
+            <small id="rental-price-7d"></small>
+          </button>
+          <button type="button" class="rental-period-btn" data-days="30" data-price="0">
+            30 Days
+            <small id="rental-price-30d"></small>
+          </button>
+        </div>
+      </div>
 
       <label class="field">
         <span>Telegram Username / 电报用户名</span>
@@ -488,6 +522,100 @@
     if (e.target === overlay) {
       closeInstructions();
     }
+  });
+})();
+
+// Rental Account Feature Handler
+(function() {
+  const typeOptionBuy = document.getElementById('typeOptionBuy');
+  const typeOptionRent = document.getElementById('typeOptionRent');
+  const rentalPeriodSection = document.getElementById('rentalPeriodSection');
+  const orderTypeField = document.getElementById('m-order-type');
+  const rentalDaysField = document.getElementById('m-rental-days');
+  const rentalPeriodBtns = document.querySelectorAll('.rental-period-btn');
+  
+  let currentProduct = { rental_1day_price: 0, rental_7day_price: 0, rental_30day_price: 0, is_rentable: 0 };
+
+  // Store product data when modal opens
+  const originalShowModal = window.showBuyModal || (() => {});
+  window.showBuyModal = function(id, name, price, stock, minQty, rental1d, rental7d, rental30d, isRentable) {
+    document.getElementById('m-product').textContent = name;
+    document.getElementById('m-product-id').value = id;
+    document.getElementById('m-unit').textContent = window.money ? window.money(price) : '$' + price;
+    document.getElementById('m-qty').value = minQty || 1;
+    document.getElementById('m-stock').textContent = stock;
+    
+    // Store rental prices
+    currentProduct = {
+      id: id,
+      name: name,
+      price: price,
+      rental_1day_price: rental1d || 0,
+      rental_7day_price: rental7d || 0,
+      rental_30day_price: rental30d || 0,
+      is_rentable: isRentable ? 1 : 0
+    };
+
+    // Update rental prices display
+    if (isRentable) {
+      document.getElementById('rental-price-1d').textContent = rental1d ? window.money ? window.money(rental1d) : '$' + rental1d : '—';
+      document.getElementById('rental-price-7d').textContent = rental7d ? window.money ? window.money(rental7d) : '$' + rental7d : '—';
+      document.getElementById('rental-price-30d').textContent = rental30d ? window.money ? window.money(rental30d) : '$' + rental30d : '—';
+      typeOptionRent.disabled = false;
+      typeOptionRent.style.opacity = '1';
+    } else {
+      typeOptionBuy.click();
+      typeOptionRent.disabled = true;
+      typeOptionRent.style.opacity = '0.5';
+    }
+
+    document.getElementById('buyModal').classList.add('is-open');
+    updateTotal();
+  };
+
+  // Toggle between Buy and Rent
+  typeOptionBuy.addEventListener('click', function() {
+    typeOptionBuy.classList.add('active');
+    typeOptionRent.classList.remove('active');
+    rentalPeriodSection.classList.remove('is-visible');
+    orderTypeField.value = 'buy';
+    rentalDaysField.value = '0';
+    updateTotal();
+  });
+
+  typeOptionRent.addEventListener('click', function() {
+    if (!currentProduct.is_rentable) return;
+    typeOptionRent.classList.add('active');
+    typeOptionBuy.classList.remove('active');
+    rentalPeriodSection.classList.add('is-visible');
+    orderTypeField.value = 'rent';
+    // Select first rental period by default
+    rentalPeriodBtns[0].click();
+  });
+
+  // Rental period selection
+  rentalPeriodBtns.forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const days = this.dataset.days;
+      const price = this.dataset.price;
+      
+      rentalPeriodBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      
+      rentalDaysField.value = days;
+      
+      // Get the price based on selected days
+      let rentalPrice = 0;
+      if (days == 1) rentalPrice = currentProduct.rental_1day_price;
+      else if (days == 7) rentalPrice = currentProduct.rental_7day_price;
+      else if (days == 30) rentalPrice = currentProduct.rental_30day_price;
+      
+      // Update total
+      const qty = parseInt(document.getElementById('m-qty').value) || 1;
+      const total = rentalPrice * qty;
+      document.getElementById('m-total').textContent = window.money ? window.money(total) : '$' + total;
+    });
   });
 })();
 </script>
