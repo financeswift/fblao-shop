@@ -1,5 +1,62 @@
 <%- include('partials/head') %>
 
+<!-- Instructions Modal -->
+<div class="instructions-overlay" id="instructionsModal">
+  <div class="instructions-modal">
+    <button class="instructions-close" id="instructionsClose" aria-label="Close">&times;</button>
+    <div class="instructions-content">
+      <h2>Welcome to BM Shop</h2>
+      <p class="instructions-subtitle">Premium Accounts & Digital Products</p>
+      
+      <div class="instructions-section">
+        <h3>📋 How to Buy</h3>
+        <ol class="instructions-list">
+          <li>Browse our product categories (Facebook, Twitter, YouTube, TikTok, Apple ID, etc.)</li>
+          <li>Click "Buy Now" on any product to open the purchase form</li>
+          <li>Enter your Telegram username for order delivery</li>
+          <li>Select quantity and choose your payment method</li>
+          <li>Complete payment and receive your account details via Telegram</li>
+        </ol>
+      </div>
+
+      <div class="instructions-section">
+        <h3>💳 Payment Methods</h3>
+        <ul class="instructions-list">
+          <li>Alipay (支付宝) - Fast and secure</li>
+          <li>WeChat Pay (微信支付) - Popular in China</li>
+          <li>Other digital payment options available</li>
+        </ul>
+      </div>
+
+      <div class="instructions-section">
+        <h3>✅ What You Get</h3>
+        <ul class="instructions-list">
+          <li>Real, active accounts with full login credentials</li>
+          <li>Account age, follower count, and verification status included</li>
+          <li>Email and password provided for full account control</li>
+          <li>Instant delivery after payment confirmation</li>
+        </ul>
+      </div>
+
+      <div class="instructions-section">
+        <h3>🔍 After Purchase</h3>
+        <ul class="instructions-list">
+          <li>Use the "Order Status" page to check your delivery anytime</li>
+          <li>Enter your Telegram username and order number to lookup</li>
+          <li>Your account details will be displayed on completion</li>
+        </ul>
+      </div>
+
+      <div class="instructions-section">
+        <h3>📞 Support</h3>
+        <p>For any questions or issues, contact us via Telegram. Our team is available 24/7 to assist you.</p>
+      </div>
+
+      <button type="button" class="btn btn-block" id="instructionsConfirm">Got it, let's shop!</button>
+    </div>
+  </div>
+</div>
+
 <section class="store-hero card">
   <div>
     <h1>一手自运营优质账户 | BM商店</h1>
@@ -381,3 +438,39 @@
 </div>
 
 <%- include('partials/foot') %>
+
+<script>
+// Instructions Modal Handler
+(function() {
+  const overlay = document.getElementById('instructionsModal');
+  const closeBtn = document.getElementById('instructionsClose');
+  const confirmBtn = document.getElementById('instructionsConfirm');
+  const storageKey = 'bm-shop-instructions-seen';
+
+  function closeInstructions() {
+    overlay.classList.remove('is-open');
+    localStorage.setItem(storageKey, 'true');
+  }
+
+  function openInstructions() {
+    overlay.classList.add('is-open');
+  }
+
+  // Show instructions on first visit
+  if (!localStorage.getItem(storageKey)) {
+    setTimeout(() => {
+      openInstructions();
+    }, 300);
+  }
+
+  closeBtn.addEventListener('click', closeInstructions);
+  confirmBtn.addEventListener('click', closeInstructions);
+
+  // Close on overlay click
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) {
+      closeInstructions();
+    }
+  });
+})();
+</script>
