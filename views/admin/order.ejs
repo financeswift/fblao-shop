@@ -172,6 +172,7 @@
     <div class="subpanel">
       <h2>Internal Admin Notes</h2>
       <form method="POST" action="/admin/orders/<%= order.id %>/notes" class="stack">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <textarea name="admin_notes" placeholder="Private notes for staff only..." style="min-height: 80px;"><%= order.admin_notes || '' %></textarea>
         <button class="btn btn-sm" type="submit">Save Notes</button>
       </form>
@@ -183,6 +184,7 @@
       <h2>Edit Order Data (Public)</h2>
       <p class="muted" style="font-size: 12px; margin-bottom: 15px;">Information entered here is visible to the customer on the Order Status page.</p>
       <form method="POST" action="/admin/orders/<%= order.id %>/update-details" class="stack" style="gap: 12px;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <label class="field"><span>Manual Status Overide</span>
           <select name="status">
             <% ['pending','paid','delivered','failed','cancelled'].forEach(function(s){ %>
@@ -220,6 +222,7 @@
         <div class="alert alert-error" style="margin-bottom: 15px;">Warning: This order is UNPAID.</div>
       <% } %>
       <form method="POST" action="/admin/orders/<%= order.id %>/deliver" class="stack">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <span class="muted" style="font-size: 13px;">Delivery Content (Plain Text / JSON / Cookies)</span>
           <% if (order.delivered_content) { %>
