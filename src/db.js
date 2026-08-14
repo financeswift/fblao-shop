@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS product_stock_pool (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
-  content    TEXT NOT NULL,
+  content    TEXT NOT NULL DEFAULT '',
   is_sold    INTEGER NOT NULL DEFAULT 0,
   order_id   INTEGER REFERENCES orders(id) ON DELETE SET NULL,
   added_at   TEXT NOT NULL DEFAULT (datetime('now')),
@@ -185,6 +185,7 @@ try { db.exec("ALTER TABLE product_stock_pool ADD COLUMN account_email_number TE
 try { db.exec("ALTER TABLE product_stock_pool ADD COLUMN account_password TEXT"); } catch(e){}
 try { db.exec("ALTER TABLE product_stock_pool ADD COLUMN sim_type TEXT DEFAULT 'SIM'"); } catch(e){}
 try { db.exec("ALTER TABLE product_stock_pool ADD COLUMN esim_qrcode TEXT"); } catch(e){}
+try { db.exec("UPDATE product_stock_pool SET content = COALESCE(content, '') WHERE content IS NULL"); } catch(e){}
 
 // Migrations for order delivery info and SIM type tracking
 try { db.exec("ALTER TABLE orders ADD COLUMN delivery_address TEXT"); } catch(e){}

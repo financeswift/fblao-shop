@@ -142,16 +142,18 @@ const StoreService = {
   // Add structured account data to stock pool (SIM/eSIM with credentials)
   addStructuredStockItem(productId, data) {
     const insertStmt = db.prepare(`
-      INSERT INTO product_stock_pool (product_id, account_email_number, account_password, sim_type, esim_qrcode)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO product_stock_pool (product_id, content, account_email_number, account_password, sim_type, esim_qrcode)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
 
     const tx = db.transaction(() => {
       // Encrypt password before storing
       const encryptedPassword = encrypt(data.account_password);
+      const contentText = String(data.account_email_number || '').trim() || `Account ${Date.now()}`;
 
       insertStmt.run(
         productId,
+        contentText,
         data.account_email_number,
         encryptedPassword,
         data.sim_type || 'SIM',
