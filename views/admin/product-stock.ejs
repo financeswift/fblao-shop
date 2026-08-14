@@ -22,6 +22,7 @@
 
   <div class="panel-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
     <form method="POST" action="/admin/products/<%= product.id %>/stock/add" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <span class="muted" style="font-size: 13px; margin-bottom: 8px;">Option 1: Paste multiple lines</span>
       <textarea name="lines" style="width:100%; min-height:120px; font-family:monospace; margin-bottom:10px; font-size: 12px;" placeholder="item1:pass
 item2:pass
@@ -30,6 +31,7 @@ item3:pass"></textarea>
     </form>
 
     <form method="POST" action="/admin/products/<%= product.id %>/stock/add" enctype="multipart/form-data" class="stack" style="border-left: 1px solid var(--border); padding-left: 20px;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <span class="muted" style="font-size: 13px; margin-bottom: 8px;">Option 2: Upload CSV file</span>
       <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px dashed var(--border); border-radius: 8px; padding: 20px; background: rgba(255,255,255,0.02);">
         <input type="file" name="csv_file" accept=".csv,.txt" id="csv_file" style="display: none;" onchange="document.getElementById('file-name').innerText = this.files[0].name">
@@ -78,6 +80,7 @@ item3:pass"></textarea>
     </div>
     <% if (pool.length) { %>
       <form method="POST" action="/admin/products/<%= product.id %>/stock/clear" onsubmit="return confirm('Clear ALL unsold stock for this product?');" style="margin-top:15px;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="btn btn-sm btn-danger" type="submit">Delete All Unsold Stock</button>
       </form>
     <% } %>
@@ -114,6 +117,7 @@ item3:pass"></textarea>
     <p class="muted" style="font-size: 13px; margin-bottom: 20px;">Fill in the account details for this item. Each submission adds +1 to stock.</p>
     
     <form id="singleStockForm" method="POST" action="/admin/products/<%= product.id %>/stock/add-single" style="display: flex; flex-direction: column; gap: 15px;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       
       <!-- Account Email/Number -->
       <div>
