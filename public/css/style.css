@@ -1918,9 +1918,16 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 
 /* Admin Product Table Mobile Optimization */
 @media (max-width: 1024px) {
-  .product-table th:first-child,
-  .product-table td:first-child {
+  /* Admin product table hides the first column at smaller widths */
+  .admin-main .product-table th:first-child,
+  .admin-main .product-table td:first-child {
     display: none;
+  }
+
+  /* Customer storefront product tables must keep the title/description column visible */
+  .table-wrap .product-table th:first-child,
+  .table-wrap .product-table td:first-child {
+    display: table-cell;
   }
 }
 
