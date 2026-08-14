@@ -1,5 +1,6 @@
 'use strict';
 
+// Ensure full product catalog seeding for all categories
 const path = require('path');
 const fs = require('fs');
 const { openDatabase } = require('./sqlite');
