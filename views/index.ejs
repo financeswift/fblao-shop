@@ -534,31 +534,61 @@
   
   let currentProduct = { rental_1day_price: 0, rental_7day_price: 0, rental_30day_price: 0, is_rentable: 0 };
 
+  function updateTotal() {
+    const qtyInput = document.getElementById('m-qty');
+    const qty = parseInt(qtyInput ? qtyInput.value : '1', 10) || 1;
+    const orderType = document.getElementById('m-order-type');
+    const activePeriod = document.querySelector('.rental-period-btn.active');
+    let unitPrice = Number(currentProduct.price) || 0;
+
+    if (orderType && orderType.value === 'rent' && activePeriod) {
+      const days = String(activePeriod.dataset.days || '1');
+      if (days === '1') unitPrice = Number(currentProduct.rental_1day_price) || 0;
+      else if (days === '7') unitPrice = Number(currentProduct.rental_7day_price) || 0;
+      else if (days === '30') unitPrice = Number(currentProduct.rental_30day_price) || 0;
+    }
+
+    const unitEl = document.getElementById('m-unit');
+    const totalEl = document.getElementById('m-total');
+    if (unitEl) unitEl.textContent = window.money ? window.money(unitPrice) : '$' + unitPrice;
+    if (totalEl) totalEl.textContent = window.money ? window.money(unitPrice * qty) : '$' + (unitPrice * qty);
+  }
+
   // Store product data when modal opens
   const originalShowModal = window.showBuyModal || (() => {});
   window.showBuyModal = function(id, name, price, stock, minQty, rental1d, rental7d, rental30d, isRentable) {
     document.getElementById('m-product').textContent = name;
     document.getElementById('m-product-id').value = id;
-    document.getElementById('m-unit').textContent = window.money ? window.money(price) : '$' + price;
-    document.getElementById('m-qty').value = minQty || 1;
-    document.getElementById('m-stock').textContent = stock;
-    
+
     // Store rental prices
     currentProduct = {
       id: id,
       name: name,
-      price: price,
-      rental_1day_price: rental1d || 0,
-      rental_7day_price: rental7d || 0,
-      rental_30day_price: rental30d || 0,
+      price: Number(price) || 0,
+      rental_1day_price: Number(rental1d) || 0,
+      rental_7day_price: Number(rental7d) || 0,
+      rental_30day_price: Number(rental30d) || 0,
       is_rentable: isRentable ? 1 : 0
     };
 
+    const qtyInput = document.getElementById('m-qty');
+    if (qtyInput) {
+      qtyInput.value = minQty || 1;
+      qtyInput.min = minQty || 1;
+      qtyInput.max = stock || 1;
+    }
+
     // Update rental prices display
     if (isRentable) {
-      document.getElementById('rental-price-1d').textContent = rental1d ? window.money ? window.money(rental1d) : '$' + rental1d : '—';
-      document.getElementById('rental-price-7d').textContent = rental7d ? window.money ? window.money(rental7d) : '$' + rental7d : '—';
-      document.getElementById('rental-price-30d').textContent = rental30d ? window.money ? window.money(rental30d) : '$' + rental30d : '—';
+      const price1d = Number(rental1d) || 0;
+      const price7d = Number(rental7d) || 0;
+      const price30d = Number(rental30d) || 0;
+      const rental1dEl = document.getElementById('rental-price-1d');
+      const rental7dEl = document.getElementById('rental-price-7d');
+      const rental30dEl = document.getElementById('rental-price-30d');
+      if (rental1dEl) rental1dEl.textContent = price1d ? (window.money ? window.money(price1d) : '$' + price1d) : '—';
+      if (rental7dEl) rental7dEl.textContent = price7d ? (window.money ? window.money(price7d) : '$' + price7d) : '—';
+      if (rental30dEl) rental30dEl.textContent = price30d ? (window.money ? window.money(price30d) : '$' + price30d) : '—';
       typeOptionRent.disabled = false;
       typeOptionRent.style.opacity = '1';
     } else {
