@@ -1,6 +1,7 @@
 'use strict';
 
-const fetch = require('node:fetch');
+// Use global fetch (available in Node 18+) or require node-fetch for older versions
+const fetch = global.fetch || require('node-fetch');
 const { db, getSetting } = require('./db');
 const StoreService = require('./services/store');
 const { generateOrderNumber } = require('./helpers');
@@ -73,14 +74,15 @@ function buildQuantityButtons(productId) {
 }
 
 function buildPaymentMethodButtons(productId, quantity) {
+  // Use official payment provider representations with emojis
   const methods = [
-    { text: '💳 GCash', callback_data: `pay_${productId}_${quantity}_swiftpay_gcash` },
-    { text: '📲 QRPH', callback_data: `pay_${productId}_${quantity}_swiftpay_qrph` },
-    { text: '💰 Maya', callback_data: `pay_${productId}_${quantity}_maya` },
-    { text: '💎 Coins', callback_data: `pay_${productId}_${quantity}_coins` },
-    { text: '🎯 Alipay', callback_data: `pay_${productId}_${quantity}_magpie_alipay` },
-    { text: '🇨🇳 WeChat Pay', callback_data: `pay_${productId}_${quantity}_magpie_wechat` },
-    { text: '🏦 Manual', callback_data: `pay_${productId}_${quantity}_manual` },
+    { text: '🟦 GCash', callback_data: `pay_${productId}_${quantity}_swiftpay_gcash` },
+    { text: '🟪 QRPH', callback_data: `pay_${productId}_${quantity}_swiftpay_qrph` },
+    { text: '🟨 Maya', callback_data: `pay_${productId}_${quantity}_maya` },
+    { text: '🟩 Coins.ph', callback_data: `pay_${productId}_${quantity}_coins` },
+    { text: '🔴 Alipay', callback_data: `pay_${productId}_${quantity}_magpie_alipay` },
+    { text: '🟢 WeChat', callback_data: `pay_${productId}_${quantity}_magpie_wechat` },
+    { text: '🏦 Bank Transfer', callback_data: `pay_${productId}_${quantity}_manual` },
     { text: '↩️ Back', callback_data: `prod_${productId}` }
   ];
   return [methods.slice(0, 2), methods.slice(2, 4), methods.slice(4, 6), methods.slice(6, 7), methods.slice(7)];
@@ -186,6 +188,30 @@ async function handlePaymentMethod(chatId, messageId, userId, username, productI
     return;
   }
 
+  // Get payment method icon
+  const paymentMethodIcons = {
+    'swiftpay_gcash': '🟦',
+    'swiftpay_qrph': '🟪',
+    'maya': '🟨',
+    'coins': '🟩',
+    'magpie_alipay': '🔴',
+    'magpie_wechat': '🟢',
+    'manual': '🏦'
+  };
+  const methodIcon = paymentMethodIcons[paymentType] || '💳';
+
+  // Get payment method name
+  const paymentMethodNames = {
+    'swiftpay_gcash': 'GCash',
+    'swiftpay_qrph': 'QRPH',
+    'maya': 'Maya',
+    'coins': 'Coins.ph',
+    'magpie_alipay': 'Alipay',
+    'magpie_wechat': 'WeChat',
+    'manual': 'Bank Transfer'
+  };
+  const methodName = paymentMethodNames[paymentType] || 'Payment';
+
   // Create order
   const orderNumber = generateOrderNumber();
   const total = +(product.price * quantity).toFixed(2);
@@ -262,11 +288,12 @@ async function handlePaymentMethod(chatId, messageId, userId, username, productI
                 `Product: ${product.name}\n` +
                 `Quantity: ${quantity}\n` +
                 `Total: ${getSetting('currency', 'PHP')} ${total}\n\n` +
+                `Payment: ${methodIcon} <b>${methodName}</b>\n\n` +
                 `Click the button below to proceed to payment:`;
 
     const buttons = [[
       {
-        text: '💳 Proceed to Payment',
+        text: `${methodIcon} Pay with ${methodName}`,
         url: paymentUrl
       }
     ]];
