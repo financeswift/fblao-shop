@@ -1,0 +1,69 @@
+<!-- Reusable Product Form (Edit or Add) -->
+<div class="product-form-wrapper">
+  <div class="field-row">
+    <label class="field" style="flex:1;"><span>Product Name</span>
+      <input type="text" name="name" value="<%= product.name || '' %>" <%= isNew ? 'required placeholder="e.g. Aged Facebook Account (2015)"' : '' %>>
+    </label>
+    <label class="field" style="flex:1;"><span>Category</span>
+      <select name="category_id">
+        <% categories.forEach(function(c){ %>
+          <option value="<%= c.id %>" <%= product.category_id === c.id ? 'selected' : '' %>><%= c.name %></option>
+        <% }) %>
+      </select>
+    </label>
+  </div>
+
+  <label class="field"><span>Description</span>
+    <input type="text" name="description" value="<%= product.description || '' %>" <%= isNew ? 'placeholder="Brief details about the account/service"' : '' %>>
+  </label>
+
+  <div class="field-row">
+    <label class="field"><span><%= isNew ? 'Price (PHP)' : 'Price' %></span>
+      <input type="number" step="0.01" name="price" value="<%= product.price || 0 %>" <%= isNew ? 'required' : '' %>>
+    </label>
+    <label class="field"><span><%= isNew ? 'Minimum Quantity' : 'Min Order' %></span>
+      <input type="number" name="min_quantity" value="<%= product.min_quantity || 1 %>" min="1">
+    </label>
+    <label class="field"><span>Stock</span>
+      <input type="number" name="stock" value="<%= product.stock || 0 %>" <%= product.auto_deliver ? 'readonly' : '' %>>
+    </label>
+    <label class="field"><span>Sort Order</span>
+      <input type="number" name="sort_order" value="<%= product.sort_order || 0 %>">
+    </label>
+    <% if (isNew) { %>
+      <div style="display: flex; gap: 20px; align-items: center; padding: 15px 10px 0;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+          <input type="checkbox" name="auto_deliver" checked style="width: 18px; height: 18px; accent-color: var(--accent);"> Auto-Deliver
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+          <input type="checkbox" name="active" checked style="width: 18px; height: 18px; accent-color: var(--accent);"> Active
+        </label>
+      </div>
+    <% } else { %>
+      <label class="field" style="flex: 0 0 auto;"><span>Auto-Deliver</span>
+        <input type="checkbox" name="auto_deliver" <%= product.auto_deliver ? 'checked' : '' %>>
+      </label>
+      <label class="field" style="flex: 0 0 auto;"><span>Active</span>
+        <input type="checkbox" name="active" <%= product.active ? 'checked' : '' %>>
+      </label>
+    <% } %>
+  </div>
+
+  <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+      <input type="checkbox" id="is_rentable_<%= isNew ? 'new' : product.id %>" name="is_rentable" <%= product.is_rentable ? 'checked' : '' %> style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+      <label for="is_rentable_<%= isNew ? 'new' : product.id %>" style="cursor: pointer; margin: 0; font-weight: 600; color: var(--text);">Enable Rental</label>
+    </div>
+    <div class="field-row">
+      <label class="field"><span>1-Day Rental (PHP)</span>
+        <input type="number" step="0.01" name="rental_1day_price" value="<%= product.rental_1day_price || 0 %>" min="0">
+      </label>
+      <label class="field"><span>7-Day Rental (PHP)</span>
+        <input type="number" step="0.01" name="rental_7day_price" value="<%= product.rental_7day_price || 0 %>" min="0">
+      </label>
+      <label class="field"><span>30-Day Rental (PHP)</span>
+        <input type="number" step="0.01" name="rental_30day_price" value="<%= product.rental_30day_price || 0 %>" min="0">
+      </label>
+    </div>
+  </div>
+</div>

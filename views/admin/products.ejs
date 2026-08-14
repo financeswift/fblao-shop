@@ -96,35 +96,7 @@
           <td colspan="7" style="padding: 20px;">
             <form method="POST" action="/admin/products/<%= p.id %>/update">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <div class="field-row">
-                <label class="field" style="flex:1;"><span>Name</span><input type="text" name="name" value="<%= escapeHtml(p.name) %>"></label>
-                <label class="field" style="flex:1;"><span>Category</span>
-                  <select name="category_id">
-                    <% categories.forEach(function(c){ %>
-                      <option value="<%= c.id %>" <%= c.id === p.category_id ? 'selected' : '' %>><%= c.name %></option>
-                    <% }) %>
-                  </select></label>
-              </div>
-              <label class="field"><span>Description</span><input type="text" name="description" value="<%= escapeHtml(p.description) %>"></label>
-              <div class="field-row">
-                <label class="field"><span>Price</span><input type="number" step="0.01" name="price" value="<%= p.price %>"></label>
-                <label class="field"><span>Min Order</span><input type="number" name="min_quantity" value="<%= p.min_quantity || 1 %>" min="1"></label>
-                <label class="field"><span>Stock</span><input type="number" name="stock" value="<%= p.stock %>" <%= p.auto_deliver ? 'readonly' : '' %>></label>
-                <label class="field"><span>Sort</span><input type="number" name="sort_order" value="<%= p.sort_order %>"></label>
-                <label class="field" style="flex: 0 0 auto;"><span>Auto-Deliver</span><input type="checkbox" name="auto_deliver" <%= p.auto_deliver ? 'checked' : '' %>></label>
-                <label class="field" style="flex: 0 0 auto;"><span>Active</span><input type="checkbox" name="active" <%= p.active ? 'checked' : '' %>></label>
-              </div>
-              <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                  <input type="checkbox" id="is_rentable_<%= p.id %>" name="is_rentable" <%= p.is_rentable ? 'checked' : '' %> style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
-                  <label for="is_rentable_<%= p.id %>" style="cursor: pointer; margin: 0; font-weight: 600; color: var(--text);">Enable Rental</label>
-                </div>
-                <div class="field-row">
-                  <label class="field"><span>1-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_1day_price" value="<%= p.rental_1day_price || 0 %>" min="0"></label>
-                  <label class="field"><span>7-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_7day_price" value="<%= p.rental_7day_price || 0 %>" min="0"></label>
-                  <label class="field"><span>30-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_30day_price" value="<%= p.rental_30day_price || 0 %>" min="0"></label>
-                </div>
-              </div>
+              <%- include('partials/product-form', { product: p, categories: categories, isNew: false, escapeHtml: escapeHtml }) %>
               <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
                 <button class="btn btn-sm btn-primary" type="submit">Update Product</button>
                 <button type="button" class="btn btn-sm" onclick="this.closest('tr').style.display = 'none'">Cancel</button>
@@ -146,38 +118,7 @@
   <% } else { %>
   <form method="POST" action="/admin/products">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <div class="field-row">
-      <label class="field" style="flex: 1.5;"><span>Product Name</span><input type="text" name="name" required placeholder="e.g. Aged Facebook Account (2015)"></label>
-      <label class="field" style="flex: 1;"><span>Category</span>
-        <select name="category_id">
-          <% categories.forEach(function(c){ %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
-        </select></label>
-    </div>
-    <label class="field"><span>Description</span><input type="text" name="description" placeholder="Brief details about the account/service"></label>
-    <div class="field-row">
-      <label class="field"><span>Price (PHP)</span><input type="number" step="0.01" name="price" value="0" required></label>
-      <label class="field"><span>Minimum Quantity</span><input type="number" name="min_quantity" value="1" min="1"></label>
-      <label class="field"><span>Sort Order</span><input type="number" name="sort_order" value="0"></label>
-      <div style="display: flex; gap: 20px; align-items: center; padding: 15px 10px 0;">
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
-          <input type="checkbox" name="auto_deliver" checked style="width: 18px; height: 18px; accent-color: var(--accent);"> Auto-Deliver
-        </label>
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
-          <input type="checkbox" name="active" checked style="width: 18px; height: 18px; accent-color: var(--accent);"> Active
-        </label>
-      </div>
-    </div>
-    <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
-      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-        <input type="checkbox" id="is_rentable_new" name="is_rentable" style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
-        <label for="is_rentable_new" style="cursor: pointer; margin: 0; font-weight: 600; color: var(--text);">Enable Rental</label>
-      </div>
-      <div class="field-row">
-        <label class="field"><span>1-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_1day_price" value="0" min="0"></label>
-        <label class="field"><span>7-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_7day_price" value="0" min="0"></label>
-        <label class="field"><span>30-Day Rental (PHP)</span><input type="number" step="0.01" name="rental_30day_price" value="0" min="0"></label>
-      </div>
-    </div>
+    <%- include('partials/product-form', { product: { category_id: null, name: '', description: '', price: 0, min_quantity: 1, stock: 0, sort_order: 0, auto_deliver: true, active: true, is_rentable: false, rental_1day_price: 0, rental_7day_price: 0, rental_30day_price: 0 }, categories: categories, isNew: true, escapeHtml: escapeHtml }) %>
     <button class="btn btn-primary" type="submit" style="margin-top: 15px; padding: 12px 30px;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
       Add Product to Shop
