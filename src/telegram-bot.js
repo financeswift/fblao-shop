@@ -76,11 +76,14 @@ function buildPaymentMethodButtons(productId, quantity) {
   const methods = [
     { text: '💳 GCash', callback_data: `pay_${productId}_${quantity}_swiftpay_gcash` },
     { text: '📲 QRPH', callback_data: `pay_${productId}_${quantity}_swiftpay_qrph` },
-    { text: '💰 Maya', callback_data: `pay_${productId}_${quantity}_swiftpay_maya` },
-    { text: '🏦 Bank Transfer', callback_data: `pay_${productId}_${quantity}_manual` },
+    { text: '💰 Maya', callback_data: `pay_${productId}_${quantity}_maya` },
+    { text: '💎 Coins', callback_data: `pay_${productId}_${quantity}_coins` },
+    { text: '🎯 Alipay', callback_data: `pay_${productId}_${quantity}_magpie_alipay` },
+    { text: '🇨🇳 WeChat Pay', callback_data: `pay_${productId}_${quantity}_magpie_wechat` },
+    { text: '🏦 Manual', callback_data: `pay_${productId}_${quantity}_manual` },
     { text: '↩️ Back', callback_data: `prod_${productId}` }
   ];
-  return [methods.slice(0, 2), methods.slice(2, 4), methods.slice(4)];
+  return [methods.slice(0, 2), methods.slice(2, 4), methods.slice(4, 6), methods.slice(6, 7), methods.slice(7)];
 }
 
 async function handleStart(chatId, userId, username) {
@@ -183,12 +186,6 @@ async function handlePaymentMethod(chatId, messageId, userId, username, productI
     return;
   }
 
-  // Check if payment method is configured
-  if (paymentType.startsWith('swiftpay_') && !require('./swiftpay').isConfigured()) {
-    await editMessage(chatId, messageId, '❌ This payment method is not available.');
-    return;
-  }
-
   // Create order
   const orderNumber = generateOrderNumber();
   const total = +(product.price * quantity).toFixed(2);
@@ -209,43 +206,56 @@ async function handlePaymentMethod(chatId, messageId, userId, username, productI
   });
 
   try {
-    // Handle Swiftpay payment creation
+    const db = require('./db');
+    const baseUrl = process.env.BASE_URL || 'https://fblao-shop.up.railway.app';
+    let paymentUrl;
+
+    // Handle different payment methods
     if (paymentType === 'swiftpay_gcash' || paymentType === 'swiftpay_qrph') {
+      // Inline QR code payment
       const swiftpay = require('./swiftpay');
       const { paymentId, qrCode } = await swiftpay.createQrph(order);
-      
-      // Update order with Swiftpay details
-      const db = require('./db');
       db.prepare('UPDATE orders SET swiftpay_checkout_id = ?, swiftpay_checkout_url = ? WHERE id = ?')
         .run(paymentId, qrCode, order.id);
       
-      // Refresh order object
-      const updatedOrder = StoreService.getOrder(order.id);
-      if (updatedOrder) {
-        order.swiftpay_checkout_id = updatedOrder.swiftpay_checkout_id;
-        order.swiftpay_checkout_url = updatedOrder.swiftpay_checkout_url;
-      }
+      paymentType === 'swiftpay_gcash' 
+        ? (paymentUrl = `${baseUrl}/swiftpay/gcash?ref=${encodeURIComponent(orderNumber)}`)
+        : (paymentUrl = `${baseUrl}/swiftpay/qrph?ref=${encodeURIComponent(orderNumber)}`);
+    } 
+    else if (paymentType === 'maya') {
+      // Maya checkout redirect
+      const maya = require('./maya');
+      const { checkoutId, redirectUrl } = await maya.createCheckout(order, baseUrl);
+      db.prepare('UPDATE orders SET maya_checkout_id = ? WHERE id = ?').run(checkoutId, order.id);
+      paymentUrl = redirectUrl;
+    }
+    else if (paymentType === 'coins') {
+      // Coins.ph redirect
+      const coins = require('./coins');
+      const { paymentRequestId, redirectUrl } = await coins.createPaymentRequest(order, baseUrl);
+      db.prepare('UPDATE orders SET coins_request_id = ? WHERE id = ?').run(paymentRequestId, order.id);
+      paymentUrl = redirectUrl;
+    }
+    else if (paymentType === 'magpie_alipay' || paymentType === 'magpie_wechat') {
+      // Magpie Alipay/WeChat
+      const magpie = require('./magpie');
+      const method = paymentType === 'magpie_wechat' ? 'wechat' : 'alipay';
+      const { sessionId, redirectUrl } = await magpie.createSession(order, method, baseUrl);
+      db.prepare('UPDATE orders SET magpie_session_id = ?, magpie_method = ? WHERE id = ?')
+        .run(sessionId, method, order.id);
+      paymentUrl = redirectUrl;
+    }
+    else if (paymentType === 'manual') {
+      // Manual payment (admin transfer details)
+      paymentUrl = `${baseUrl}/order/result?ref=${encodeURIComponent(orderNumber)}`;
+    }
+    else {
+      // Default fallback
+      paymentUrl = `${baseUrl}/order/result?ref=${encodeURIComponent(orderNumber)}`;
     }
 
     // Notify admin
     NotificationService.onNewOrder(order).catch(console.error);
-
-    // Generate payment URL based on payment type
-    const baseUrl = process.env.BASE_URL || 'https://fblao-shop.up.railway.app';
-    let paymentUrl;
-
-    // Route to appropriate payment page based on payment type
-    if (paymentType === 'swiftpay_gcash') {
-      paymentUrl = `${baseUrl}/swiftpay/gcash?ref=${encodeURIComponent(orderNumber)}`;
-    } else if (paymentType === 'swiftpay_qrph') {
-      paymentUrl = `${baseUrl}/swiftpay/qrph?ref=${encodeURIComponent(orderNumber)}`;
-    } else if (paymentType === 'swiftpay_maya') {
-      paymentUrl = `${baseUrl}/swiftpay/checkout?ref=${encodeURIComponent(orderNumber)}`;
-    } else if (paymentType === 'manual') {
-      paymentUrl = `${baseUrl}/order/result?ref=${encodeURIComponent(orderNumber)}`;
-    } else {
-      paymentUrl = `${baseUrl}/order/result?ref=${encodeURIComponent(orderNumber)}`;
-    }
 
     const msg = `<b>✅ Order Created!</b>\n\n` +
                 `Order #: <code>${orderNumber}</code>\n` +
