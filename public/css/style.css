@@ -1925,12 +1925,20 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 }
 
 @media (max-width: 768px) {
-  .product-table th:nth-child(3),
-  .product-table td:nth-child(3) {
+  /* Admin product table on tablets */
+  .admin-main .product-table th:nth-child(3),
+  .admin-main .product-table td:nth-child(3) {
     display: none;
   }
-  .product-table td div[style*="display: flex"][style*="gap"] {
+  .admin-main .product-table td div[style*="display: flex"][style*="gap"] {
     flex-direction: column !important;
+  }
+
+  /* Customer product table on tablets */
+  .table-wrap .product-table th,
+  .table-wrap .product-table td {
+    padding: 10px 8px;
+    font-size: 12px;
   }
 }
 
