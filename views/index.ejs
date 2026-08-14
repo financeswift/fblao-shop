@@ -147,15 +147,32 @@
               data-price="<%= p.price %>"
               data-stock="<%= p.stock %>">
               <td class="col-name">
+                <div class="product-badges">
+                  <% if (p.stock > 50) { %>
+                    <span class="badge badge-new">New</span>
+                  <% } %>
+                  <% if (p.stock > 20 && p.stock <= 50) { %>
+                    <span class="badge badge-hot">Hot</span>
+                  <% } %>
+                  <% if (p.stock > 0 && p.stock <= 10) { %>
+                    <span class="badge badge-limited">Limited</span>
+                  <% } %>
+                </div>
                 <div class="p-name"><%= p.name %></div>
                 <% if (p.description) { %><div class="p-desc"><%= p.description %></div><% } %>
+                <% if (p.stock > 0 && p.stock <= 5) { %>
+                  <div class="stock-warning">⚠️ 仅剩<strong><%= p.stock %></strong>个</div>
+                <% } %>
               </td>
-              <td class="col-price"><%= money(p.price) %></td>
+              <td class="col-price">
+                <div><%= money(p.price) %></div>
+                <div class="stock-count">库存: <strong><%= p.stock %></strong></div>
+              </td>
               <td class="col-stock">
                 <% if (p.stock > 0) { %>
-                  <span class="stock-ok"><%= p.stock %></span>
+                  <span class="stock-ok">✓ 有货</span>
                 <% } else { %>
-                  <span class="stock-out">Sold out</span>
+                  <span class="stock-out">已售完</span>
                 <% } %>
               </td>
               <td class="col-buy">
