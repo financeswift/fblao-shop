@@ -6,7 +6,8 @@
   "type": "commonjs",
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning src/app.js",
-    "dev": "node --disable-warning=ExperimentalWarning --watch src/app.js"
+    "dev": "node --disable-warning=ExperimentalWarning --watch src/app.js",
+    "test-magpie": "node scripts/test-magpie-diagnostic.js"
   },
   "engines": {
     "node": ">=22.5"
