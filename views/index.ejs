@@ -507,12 +507,10 @@
     overlay.classList.add('is-open');
   }
 
-  // Show instructions on first visit
-  if (!localStorage.getItem(storageKey)) {
-    setTimeout(() => {
-      openInstructions();
-    }, 300);
-  }
+  // Show instructions on every page visit
+  setTimeout(() => {
+    openInstructions();
+  }, 300);
 
   closeBtn.addEventListener('click', closeInstructions);
   confirmBtn.addEventListener('click', closeInstructions);
