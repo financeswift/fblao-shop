@@ -1,0 +1,114 @@
+<%- include('partials/head', { title }) %>
+
+<div class="container mt-5">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h1>🔐 Verification History: <%= product.name %></h1>
+      <p class="text-muted">Credential verification attempts and results</p>
+    </div>
+  </div>
+
+  <% if (flash && flash.message) { %>
+    <div class="alert alert-<%= flash.type === 'error' ? 'danger' : 'success' %>">
+      <%= flash.message %>
+    </div>
+  <% } %>
+
+  <!-- Product Info -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <p><strong>Product Name:</strong> <%= product.name %></p>
+          <p><strong>Price:</strong> ₱<%= product.price.toFixed(2) %></p>
+          <p><strong>Channel ID:</strong> <%= product.id %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verification History -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Verification Attempts</h5>
+        </div>
+        <div class="card-body">
+          <% if (history.length === 0) { %>
+            <div class="alert alert-info">No verification attempts recorded yet.</div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table table-sm table-hover">
+                <thead>
+                  <tr>
+                    <th>Date/Time</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Response</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% history.forEach(record => { 
+                    let responseData = {};
+                    try {
+                      responseData = JSON.parse(record.response_data || '{}');
+                    } catch (e) {}
+                  %>
+                    <tr>
+                      <td>
+                        <%= new Date(record.created_at).toLocaleString() %>
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary"><%= record.verification_type %></span>
+                      </td>
+                      <td>
+                        <span class="badge bg-<%= record.status === 'verified' ? 'success' : record.status === 'pending' ? 'warning' : 'danger' %>">
+                          <%= record.status %>
+                        </span>
+                      </td>
+                      <td>
+                        <% if (record.error_message) { %>
+                          <span class="text-danger">
+                            <%= record.error_message %>
+                          </span>
+                        <% } else { %>
+                          <span class="text-success">✓ Success</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (responseData.details) { %>
+                          <small>
+                            <% if (responseData.details.url_accessible) { %>
+                              ✓ URL accessible
+                            <% } %>
+                            <% if (responseData.details.configured_fields && responseData.details.configured_fields.length > 0) { %>
+                              | <%= responseData.details.configured_fields.join(', ') %> configured
+                            <% } %>
+                          </small>
+                        <% } else if (record.response_data) { %>
+                          <small><code><%= record.response_data.substring(0, 50) %>...</code></small>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back Button -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <a href="/admin/payment-channels" class="btn btn-outline-primary">← Back to Payment Channels</a>
+      <a href="/admin/payment-channels/analytics" class="btn btn-outline-info">View Analytics</a>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/foot') %>

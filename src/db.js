@@ -135,6 +135,61 @@ CREATE TABLE IF NOT EXISTS order_audit_log (
   changed_at   TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS payment_channel_credentials (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id       INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  channel_name     TEXT NOT NULL,
+  connection_url   TEXT NOT NULL DEFAULT '',
+  api_key          TEXT NOT NULL DEFAULT '',
+  api_secret       TEXT NOT NULL DEFAULT '',
+  account_number   TEXT NOT NULL DEFAULT '',
+  merchant_id      TEXT NOT NULL DEFAULT '',
+  webhook_url      TEXT NOT NULL DEFAULT '',
+  instructions     TEXT NOT NULL DEFAULT '',
+  enabled          INTEGER NOT NULL DEFAULT 1,
+  created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS payment_channel_connections (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id         INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id       INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  telegram_username TEXT NOT NULL,
+  channel_name     TEXT NOT NULL,
+  connection_status TEXT NOT NULL DEFAULT 'connected',
+  connection_ip    TEXT,
+  connection_user_agent TEXT,
+  notes            TEXT,
+  resent_count     INTEGER NOT NULL DEFAULT 0,
+  last_resent_at   TEXT,
+  connected_at     TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS payment_channel_webhook_logs (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id       INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  channel_name     TEXT NOT NULL,
+  event_type       TEXT NOT NULL,
+  payload          TEXT NOT NULL,
+  response_status  INTEGER,
+  response_message TEXT,
+  received_at      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS payment_channel_api_verifications (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id       INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  channel_name     TEXT NOT NULL,
+  verification_type TEXT NOT NULL,
+  status           TEXT NOT NULL DEFAULT 'pending',
+  response_data    TEXT,
+  error_message    TEXT,
+  verified_at      TEXT,
+  created_at       TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_orders_order_number ON orders(order_number);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
@@ -151,6 +206,12 @@ CREATE INDEX IF NOT EXISTS idx_stock_pool_added_at ON product_stock_pool(added_a
 CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
 CREATE INDEX IF NOT EXISTS idx_audit_log_order ON order_audit_log(order_id);
 CREATE INDEX IF NOT EXISTS idx_audit_log_changed_at ON order_audit_log(changed_at);
+CREATE INDEX IF NOT EXISTS idx_pc_connections_order ON payment_channel_connections(order_id);
+CREATE INDEX IF NOT EXISTS idx_pc_connections_telegram ON payment_channel_connections(telegram_username);
+CREATE INDEX IF NOT EXISTS idx_pc_connections_status ON payment_channel_connections(connection_status);
+CREATE INDEX IF NOT EXISTS idx_pc_webhook_product ON payment_channel_webhook_logs(product_id);
+CREATE INDEX IF NOT EXISTS idx_pc_webhook_received ON payment_channel_webhook_logs(received_at);
+CREATE INDEX IF NOT EXISTS idx_pc_verification_product ON payment_channel_api_verifications(product_id);
 `);
 
 // Migrations for existing database
@@ -244,6 +305,59 @@ try { db.exec(`
     UPDATE orders SET updated_at = datetime('now') WHERE id = NEW.id;
   END;
 `); } catch(e){}
+
+// Migrations for payment channel enhancement tables (for existing databases)
+try { db.exec(`
+  CREATE TABLE IF NOT EXISTS payment_channel_connections (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id         INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    product_id       INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    telegram_username TEXT NOT NULL,
+    channel_name     TEXT NOT NULL,
+    connection_status TEXT NOT NULL DEFAULT 'connected',
+    connection_ip    TEXT,
+    connection_user_agent TEXT,
+    notes            TEXT,
+    resent_count     INTEGER NOT NULL DEFAULT 0,
+    last_resent_at   TEXT,
+    connected_at     TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`); } catch(e){}
+
+try { db.exec(`
+  CREATE TABLE IF NOT EXISTS payment_channel_webhook_logs (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id       INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    channel_name     TEXT NOT NULL,
+    event_type       TEXT NOT NULL,
+    payload          TEXT NOT NULL,
+    response_status  INTEGER,
+    response_message TEXT,
+    received_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`); } catch(e){}
+
+try { db.exec(`
+  CREATE TABLE IF NOT EXISTS payment_channel_api_verifications (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id       INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    channel_name     TEXT NOT NULL,
+    verification_type TEXT NOT NULL,
+    status           TEXT NOT NULL DEFAULT 'pending',
+    response_data    TEXT,
+    error_message    TEXT,
+    verified_at      TEXT,
+    created_at       TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`); } catch(e){}
+
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_pc_connections_order ON payment_channel_connections(order_id)"); } catch(e){}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_pc_connections_telegram ON payment_channel_connections(telegram_username)"); } catch(e){}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_pc_connections_status ON payment_channel_connections(connection_status)"); } catch(e){}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_pc_webhook_product ON payment_channel_webhook_logs(product_id)"); } catch(e){}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_pc_webhook_received ON payment_channel_webhook_logs(received_at)"); } catch(e){}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_pc_verification_product ON payment_channel_api_verifications(product_id)"); } catch(e){}
 
 // Add Coins.ph Enterprise if it doesn't exist
 const coinsExist = db.prepare('SELECT id FROM manual_payment_methods WHERE name = ?').get('Coins.ph Enterprise');
@@ -418,6 +532,34 @@ function seed() {
   insProd.run(catBankAccounts, 'POS', 'Verified digital account.', 80000, 3, 1, 11);
   insProd.run(catBankAccounts, 'RCBC', 'Verified digital account.', 1500, 10, 1, 12);
   insProd.run(catBankAccounts, 'UNION BANK NEGOSYANTE', 'Verified digital account.', 20000, 5, 1, 13);
+
+  // THAI Payment Code category
+  let catThaiPaymentCode = checkCat.get('THAI Payment Code')?.id;
+  if (!catThaiPaymentCode) {
+    catThaiPaymentCode = insCat.run('THAI Payment Code', 7).lastInsertRowid;
+  }
+  
+  insProd.run(catThaiPaymentCode, 'PromptPay QR Code', 'Thai instant payment via PromptPay QR codes. Connect to your store for real-time transactions.', 500, 10, 1, 1);
+  insProd.run(catThaiPaymentCode, 'TrueMoney Wallet', 'Digital wallet payment channel for Thailand. Integrate TrueMoney payments into your system.', 750, 8, 1, 2);
+  insProd.run(catThaiPaymentCode, 'Omise Payment Gateway', 'Full Thai payment gateway supporting multiple payment methods. Connect credit cards and e-wallets.', 2500, 5, 1, 3);
+  insProd.run(catThaiPaymentCode, 'SCB Easy App', 'Siam Commercial Bank digital payment integration for Thai merchants.', 600, 12, 1, 4);
+  insProd.run(catThaiPaymentCode, 'Alipay Thailand', 'Alipay payment integration for Thailand. Accept Chinese tourist payments.', 1500, 6, 1, 5);
+  insProd.run(catThaiPaymentCode, 'WeChat Pay Thailand', 'WeChat Pay integration for Thailand. Reach Chinese customers easily.', 1500, 7, 1, 6);
+  insProd.run(catThaiPaymentCode, 'Line Pay Thailand', 'LINE Pay integration for Thai users. Popular among local shoppers.', 800, 9, 1, 7);
+
+  // Vietnam Payment Code category
+  let catVietnamPaymentCode = checkCat.get('Vietnam Payment Code')?.id;
+  if (!catVietnamPaymentCode) {
+    catVietnamPaymentCode = insCat.run('Vietnam Payment Code', 8).lastInsertRowid;
+  }
+  
+  insProd.run(catVietnamPaymentCode, 'Momo Wallet', 'Vietnam\'s popular Momo e-wallet. Accept payments from millions of Vietnamese users.', 600, 15, 1, 1);
+  insProd.run(catVietnamPaymentCode, 'ZaloPay', 'ZaloPay integration for Vietnam. Seamless payments through Zalo ecosystem.', 600, 14, 1, 2);
+  insProd.run(catVietnamPaymentCode, 'Viettel Money', 'Viettel telecommunications payment solution for Vietnamese merchants.', 500, 11, 1, 3);
+  insProd.run(catVietnamPaymentCode, 'VNPay Payment Gateway', 'Comprehensive Vietnamese payment gateway. Connect bank transfers and e-wallets.', 2000, 8, 1, 4);
+  insProd.run(catVietnamPaymentCode, 'NAPAS QR Code', 'Vietnamese national QR standard. Accept instant bank transfers from Vietnamese customers.', 700, 10, 1, 5);
+  insProd.run(catVietnamPaymentCode, 'Bank Transfer Vietnam', 'Direct bank transfer integration for all major Vietnamese banks.', 800, 13, 1, 6);
+  insProd.run(catVietnamPaymentCode, 'Alipay Vietnam', 'Alipay integration for Vietnam. Capture Chinese tourist and international payments.', 1200, 5, 1, 7);
 
   setSetting('seeded', '1');
 }

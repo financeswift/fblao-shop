@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 600px;
+    }
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px 12px 0 0;
+      border: none;
+    }
+    .badge {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+    .channel-info {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    .info-value {
+      color: #333;
+      word-break: break-all;
+      text-align: right;
+      flex: 1;
+      margin-left: 10px;
+    }
+    .copy-btn {
+      background: none;
+      border: none;
+      color: #667eea;
+      cursor: pointer;
+      padding: 0 5px;
+      font-size: 0.9rem;
+    }
+    .copy-btn:hover {
+      color: #764ba2;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .status-connected {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .status-failed {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .instructions-section {
+      background: #e7f3ff;
+      border-left: 4px solid #0066cc;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 20px;
+    }
+    .instructions-title {
+      color: #0066cc;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .instructions-text {
+      color: #333;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="mb-0">🔗 Payment Channel Connection</h3>
+      </div>
+      <div class="card-body">
+        <!-- Order & Product Info -->
+        <div class="mb-4">
+          <div class="row">
+            <div class="col-md-6">
+              <small class="text-muted">Order Number</small>
+              <p class="mb-0"><strong>#<%= order.order_number %></strong></p>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted">Payment Channel</small>
+              <p class="mb-0"><strong><%= product.name %></strong></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="mb-4">
+          <h6 class="mb-3">Connection Status</h6>
+          <% if (connections && connections.length > 0) { %>
+            <% const firstConn = connections[0]; %>
+            <div class="status-badge <%= firstConn.connection_status === 'connected' ? 'status-connected' : firstConn.connection_status === 'pending' ? 'status-pending' : 'status-failed' %>">
+              <span style="text-transform: uppercase;">✓ <%= firstConn.connection_status %></span>
+            </div>
+            <small class="text-muted d-block mt-2">
+              Connected on: <%= new Date(firstConn.connected_at).toLocaleString() %>
+            </small>
+            <% if (firstConn.resent_count > 0) { %>
+              <small class="text-info d-block mt-1">
+                Resent <%= firstConn.resent_count %> time(s)
+              </small>
+            <% } %>
+          <% } else { %>
+            <span class="status-badge status-connected">✓ CONNECTED</span>
+            <small class="text-muted d-block mt-2">
+              Connected on: <%= new Date(connectionData.connected_at).toLocaleString() %>
+            </small>
+          <% } %>
+        </div>
+
+        <!-- Connection Details -->
+        <div class="mb-4">
+          <h6 class="mb-3">Connection Details</h6>
+          <div class="channel-info">
+            <div class="info-row">
+              <span class="info-label">Channel Name</span>
+              <span class="info-value"><%= connectionData.channel_name %></span>
+            </div>
+            <% if (connectionData.connection_url) { %>
+              <div class="info-row">
+                <span class="info-label">Connection URL</span>
+                <span class="info-value">
+                  <a href="<%= connectionData.connection_url %>" target="_blank" class="text-decoration-none">
+                    <%= connectionData.connection_url.substring(0, 40) %>...
+                  </a>
+                </span>
+              </div>
+            <% } %>
+            <% if (connectionData.api_key) { %>
+              <div class="info-row">
+                <span class="info-label">API Key</span>
+                <span class="info-value">
+                  <code><%= connectionData.api_key.substring(0, 15) %>...</code>
+                  <button class="copy-btn" onclick="copyToClipboard('<%= connectionData.api_key %>')" title="Copy">📋</button>
+                </span>
+              </div>
+            <% } %>
+            <% if (connectionData.merchant_id) { %>
+              <div class="info-row">
+                <span class="info-label">Merchant ID</span>
+                <span class="info-value">
+                  <code><%= connectionData.merchant_id %></code>
+                  <button class="copy-btn" onclick="copyToClipboard('<%= connectionData.merchant_id %>')" title="Copy">📋</button>
+                </span>
+              </div>
+            <% } %>
+            <% if (connectionData.account_number) { %>
+              <div class="info-row">
+                <span class="info-label">Account Number</span>
+                <span class="info-value">
+                  <code><%= connectionData.account_number %></code>
+                  <button class="copy-btn" onclick="copyToClipboard('<%= connectionData.account_number %>')" title="Copy">📋</button>
+                </span>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Setup Instructions -->
+        <% if (connectionData.instructions) { %>
+          <div class="instructions-section">
+            <div class="instructions-title">📝 Setup Instructions</div>
+            <div class="instructions-text"><%= connectionData.instructions %></div>
+          </div>
+        <% } %>
+
+        <!-- Footer Info -->
+        <div class="mt-4 pt-4 border-top text-muted">
+          <small>
+            💡 Keep this information safe. Do not share your API keys or sensitive data with anyone.
+            <br><br>
+            Need help? Contact our support team for assistance.
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-4">
+      <small class="text-white-50">
+        FBlao Shop Payment Integration
+        <br>
+        Order #<%= order.order_number %> | <%= new Date(order.created_at).toLocaleDateString() %>
+      </small>
+    </div>
+  </div>
+
+  <script>
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<%- include('partials/head', { title }) %>
+
+<div class="container mt-5">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h1>📜 Payment Channel Connection History</h1>
+      <p class="text-muted">Track all customer payment channel connections and interactions</p>
+    </div>
+  </div>
+
+  <% if (flash && flash.message) { %>
+    <div class="alert alert-<%= flash.type === 'error' ? 'danger' : 'success' %>">
+      <%= flash.message %>
+    </div>
+  <% } %>
+
+  <!-- Filter by Customer -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <form method="GET" class="form-inline">
+        <div class="form-group me-2">
+          <label for="customer" class="me-2">Filter by Customer:</label>
+          <input type="text" class="form-control" id="customer" name="customer" 
+                 placeholder="Telegram username" value="<%= telegramUsername %>">
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="/admin/payment-channels/history" class="btn btn-secondary ms-2">Clear</a>
+      </form>
+    </div>
+  </div>
+
+  <!-- Connection History Table -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <%= telegramUsername ? `Connections for @${telegramUsername}` : 'All Connections' %>
+            <span class="badge bg-secondary float-end"><%= history.length %> records</span>
+          </h5>
+        </div>
+        <div class="card-body">
+          <% if (history.length === 0) { %>
+            <div class="alert alert-info">
+              <% if (telegramUsername) { %>
+                No connections found for @<%= telegramUsername %>
+              <% } else { %>
+                No payment channel connections recorded yet.
+              <% } %>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table table-sm table-hover">
+                <thead>
+                  <tr>
+                    <th>Order</th>
+                    <th>Customer</th>
+                    <th>Channel</th>
+                    <th>Product</th>
+                    <th>Status</th>
+                    <th>Connected</th>
+                    <th>Resends</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% history.forEach(conn => { %>
+                    <tr>
+                      <td>
+                        <a href="/admin/orders/<%= conn.order_id %>">
+                          #<%= conn.order_id %>
+                        </a>
+                      </td>
+                      <td>
+                        <span class="badge bg-info">@<%= conn.telegram_username %></span>
+                      </td>
+                      <td><strong><%= conn.channel_name %></strong></td>
+                      <td><%= conn.product_name || 'N/A' %></td>
+                      <td>
+                        <span class="badge bg-<%= conn.connection_status === 'connected' ? 'success' : 'danger' %>">
+                          <%= conn.connection_status %>
+                        </span>
+                      </td>
+                      <td>
+                        <%= new Date(conn.connected_at).toLocaleString() %>
+                      </td>
+                      <td>
+                        <% if (conn.resent_count > 0) { %>
+                          <span class="badge bg-warning"><%= conn.resent_count %> resent</span><br>
+                          <small class="text-muted">
+                            Last: <%= new Date(conn.last_resent_at).toLocaleDateString() %>
+                          </small>
+                        <% } else { %>
+                          <span class="text-muted">—</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (conn.notes) { %>
+                          <small><%= conn.notes %></small>
+                        <% } else { %>
+                          <span class="text-muted">—</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <a href="/admin/payment-channels" class="btn btn-outline-primary">← Back to Payment Channels</a>
+      <a href="/admin/payment-channels/analytics" class="btn btn-outline-info">View Analytics</a>
+      <a href="/admin/payment-channels/webhooks" class="btn btn-outline-warning">View Webhook Logs</a>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/foot') %>

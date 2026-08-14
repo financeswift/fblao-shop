@@ -1,0 +1,139 @@
+<%- include('partials/head', { title }) %>
+
+<div class="container mt-5">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h1>💹 Payment Channel Analytics</h1>
+      <p class="text-muted">Real-time performance metrics and customer connection statistics</p>
+    </div>
+  </div>
+
+  <% if (flash && flash.message) { %>
+    <div class="alert alert-<%= flash.type === 'error' ? 'danger' : 'success' %>">
+      <%= flash.message %>
+    </div>
+  <% } %>
+
+  <!-- Key Metrics -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="card-title text-muted">Active Channels</h6>
+          <h3><%= stats.totalChannels %></h3>
+          <small>Payment channels configured</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="card-title text-muted">Total Connections</h6>
+          <h3><%= stats.totalConnections %></h3>
+          <small>Customer payment channel connections</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="card-title text-muted">Success Rate</h6>
+          <h3><%= stats.successRate %>%</h3>
+          <small>Successfully connected channels</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="card-title text-muted">Total Revenue</h6>
+          <h3>₱<%= stats.totalRevenue.toFixed(2) %></h3>
+          <small>From payment channel sales</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Channels Performance Table -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Channel Performance Details</h5>
+        </div>
+        <div class="card-body">
+          <% if (analytics.length === 0) { %>
+            <div class="alert alert-info">No payment channels configured yet.</div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table table-sm table-hover">
+                <thead>
+                  <tr>
+                    <th>Channel Name</th>
+                    <th>Product</th>
+                    <th>Connections</th>
+                    <th>Success Rate</th>
+                    <th>Revenue</th>
+                    <th>Status</th>
+                    <th>Last Connection</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% analytics.forEach(channel => { 
+                    const successRate = channel.total_connections > 0 
+                      ? ((channel.successful_connections / channel.total_connections) * 100).toFixed(1)
+                      : 0;
+                  %>
+                    <tr>
+                      <td><strong><%= channel.channel_name %></strong></td>
+                      <td><%= channel.product_name || 'N/A' %></td>
+                      <td>
+                        <span class="badge bg-primary"><%= channel.total_connections || 0 %></span>
+                      </td>
+                      <td>
+                        <% if (channel.total_connections > 0) { %>
+                          <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-<%= successRate >= 80 ? 'success' : successRate >= 50 ? 'warning' : 'danger' %>" 
+                                 style="width: <%= successRate %>%">
+                              <%= successRate %>%
+                            </div>
+                          </div>
+                        <% } else { %>
+                          <span class="text-muted">—</span>
+                        <% } %>
+                      </td>
+                      <td>₱<%= (channel.total_revenue || 0).toFixed(2) %></td>
+                      <td>
+                        <span class="badge bg-<%= channel.enabled ? 'success' : 'secondary' %>">
+                          <%= channel.enabled ? 'Active' : 'Inactive' %>
+                        </span>
+                      </td>
+                      <td>
+                        <% if (channel.last_connection) { %>
+                          <%= new Date(channel.last_connection).toLocaleDateString() %>
+                        <% } else { %>
+                          <span class="text-muted">—</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <a href="/admin/payment-channels" class="btn btn-outline-primary">← Back to Payment Channels</a>
+      <a href="/admin/payment-channels/history" class="btn btn-outline-info">View Connection History</a>
+      <a href="/admin/payment-channels/webhooks" class="btn btn-outline-warning">View Webhook Logs</a>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/foot') %>

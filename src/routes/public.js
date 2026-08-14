@@ -608,4 +608,53 @@ router.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
+// ---- ENHANCEMENT 6: Customer Connection Status Page ------------------------
+router.get('/connection-status/:orderNumber/:telegramUsername', asyncHandler(async (req, res) => {
+  const orderNumber = String(req.params.orderNumber).trim();
+  const telegramUsername = String(req.params.telegramUsername).trim();
+
+  // Find the order
+  const order = db.prepare(
+    'SELECT * FROM orders WHERE order_number = ? AND lower(telegram_username) = lower(?)'
+  ).get(orderNumber, telegramUsername);
+
+  if (!order) {
+    return res.status(404).render('error', {
+      title: 'Connection Not Found',
+      message: 'Order or customer not found.',
+      layout: false
+    });
+  }
+
+  const product = StoreService.getProduct(order.product_id, false);
+  if (!product || !StoreService.isPaymentChannelProduct(product)) {
+    return res.status(404).render('error', {
+      title: 'Not a Payment Channel',
+      message: 'This order is not for a payment channel product.',
+      layout: false
+    });
+  }
+
+  // Get connection details
+  const connections = StoreService.getConnectionsByOrderId(order.id);
+  const credentials = StoreService.getPaymentChannelCredentials(product.id);
+
+  if (!credentials) {
+    return res.status(404).render('error', {
+      title: 'Connection Not Available',
+      message: 'The payment channel has not been configured yet.',
+      layout: false
+    });
+  }
+
+  res.render('connection-status', {
+    title: `Payment Channel Connection: ${product.name}`,
+    order,
+    product,
+    credentials,
+    connections,
+    connectionData: StoreService.generatePaymentChannelConnection(order.id, product.id)
+  });
+}));
+
 module.exports = router;

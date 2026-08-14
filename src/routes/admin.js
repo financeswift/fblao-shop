@@ -763,4 +763,212 @@ router.post('/settings/password', (req, res) => {
   res.redirect('/admin/settings');
 });
 
+// ---- Payment Channel Credentials -------------------------------------------
+router.get('/payment-channels', (req, res) => {
+  const paymentChannelProducts = db.prepare(`
+    SELECT p.*, c.name AS category_name 
+    FROM products p
+    LEFT JOIN categories c ON c.id = p.category_id
+    WHERE c.name LIKE '%Payment Code%' OR c.name LIKE '%payment channel%'
+    ORDER BY c.sort_order, p.sort_order
+  `).all();
+
+  const credentials = {};
+  for (const product of paymentChannelProducts) {
+    credentials[product.id] = StoreService.getPaymentChannelCredentials(product.id);
+  }
+
+  res.render('admin/payment-channels', {
+    title: 'Payment Channel Credentials',
+    active: 'payment-channels',
+    paymentChannelProducts,
+    credentials,
+    flash: takeFlash(req)
+  });
+});
+
+router.post('/payment-channels/:productId/save', (req, res) => {
+  const productId = parseInt(req.params.productId, 10);
+  const product = StoreService.getProduct(productId, false);
+
+  if (!product || !StoreService.isPaymentChannelProduct(product)) {
+    flash(req, 'Invalid payment channel product.', 'error');
+    return res.redirect('/admin/payment-channels');
+  }
+
+  StoreService.setPaymentChannelCredentials(productId, {
+    channel_name: String(req.body.channel_name || product.name).trim(),
+    connection_url: String(req.body.connection_url || '').trim(),
+    api_key: String(req.body.api_key || '').trim(),
+    api_secret: String(req.body.api_secret || '').trim(),
+    account_number: String(req.body.account_number || '').trim(),
+    merchant_id: String(req.body.merchant_id || '').trim(),
+    webhook_url: String(req.body.webhook_url || '').trim(),
+    instructions: String(req.body.instructions || '').trim(),
+    enabled: !!req.body.enabled
+  });
+
+  flash(req, `Credentials saved for ${product.name}.`);
+  res.redirect('/admin/payment-channels');
+});
+
+router.post('/payment-channels/:productId/delete', (req, res) => {
+  const productId = parseInt(req.params.productId, 10);
+  db.prepare('DELETE FROM payment_channel_credentials WHERE product_id = ?').run(productId);
+  flash(req, 'Payment channel credentials deleted.');
+  res.redirect('/admin/payment-channels');
+});
+
+// ---- ENHANCEMENT 1: Payment Channel Analytics Dashboard --------------------
+router.get('/payment-channels/analytics', (req, res) => {
+  const analytics = StoreService.getPaymentChannelAnalytics();
+  const totalConnections = analytics.reduce((sum, a) => sum + (a.total_connections || 0), 0);
+  const totalRevenue = analytics.reduce((sum, a) => sum + (a.total_revenue || 0), 0);
+  const successRate = totalConnections > 0 
+    ? ((analytics.reduce((sum, a) => sum + (a.successful_connections || 0), 0) / totalConnections) * 100).toFixed(1)
+    : 0;
+
+  res.render('admin/payment-channels-analytics', {
+    title: 'Payment Channel Analytics',
+    active: 'payment-channels-analytics',
+    analytics,
+    stats: {
+      totalChannels: analytics.length,
+      totalConnections,
+      totalRevenue,
+      successRate
+    },
+    flash: takeFlash(req)
+  });
+});
+
+// ---- ENHANCEMENT 2: API Credentials Verification ---------------------------
+router.post('/payment-channels/:productId/verify', asyncHandler(async (req, res) => {
+  const productId = parseInt(req.params.productId, 10);
+  const product = StoreService.getProduct(productId, false);
+
+  if (!product || !StoreService.isPaymentChannelProduct(product)) {
+    flash(req, 'Invalid payment channel product.', 'error');
+    return res.redirect('/admin/payment-channels');
+  }
+
+  try {
+    const result = await StoreService.verifyPaymentChannelCredentials(productId);
+    if (result.success) {
+      flash(req, `✓ Verification successful for ${product.name}.`);
+    } else {
+      flash(req, `✗ Verification failed: ${result.error}`, 'error');
+    }
+  } catch (error) {
+    flash(req, `Verification error: ${error.message}`, 'error');
+  }
+
+  res.redirect('/admin/payment-channels');
+}));
+
+router.get('/payment-channels/:productId/verification-history', (req, res) => {
+  const productId = parseInt(req.params.productId, 10);
+  const product = StoreService.getProduct(productId, false);
+
+  if (!product || !StoreService.isPaymentChannelProduct(product)) {
+    return res.status(404).send('Not found');
+  }
+
+  const history = StoreService.getCredentialVerificationHistory(productId, 20);
+
+  res.render('admin/payment-channels-verification', {
+    title: `Verification History: ${product.name}`,
+    active: 'payment-channels',
+    product,
+    history,
+    flash: takeFlash(req)
+  });
+});
+
+// ---- ENHANCEMENT 3: Connection History Tracking ----------------------------
+router.get('/payment-channels/history', (req, res) => {
+  const limit = parseInt(req.query.limit || '100', 10);
+  const telegramUsername = String(req.query.customer || '').trim();
+
+  let history = [];
+  if (telegramUsername) {
+    history = StoreService.getCustomerConnectionHistory(telegramUsername, limit);
+  } else {
+    // Show all recent connections
+    history = db.prepare(`
+      SELECT pcc.*, p.name AS product_name, p.price
+      FROM payment_channel_connections pcc
+      LEFT JOIN products p ON p.id = pcc.product_id
+      ORDER BY pcc.connected_at DESC
+      LIMIT ?
+    `).all(limit);
+  }
+
+  res.render('admin/payment-channels-history', {
+    title: 'Payment Channel Connection History',
+    active: 'payment-channels-history',
+    history,
+    telegramUsername,
+    flash: takeFlash(req)
+  });
+});
+
+// ---- ENHANCEMENT 4: Webhook Logs System -----------------------------------
+router.get('/payment-channels/webhooks', (req, res) => {
+  const productId = req.query.product ? parseInt(req.query.product, 10) : null;
+  const limit = parseInt(req.query.limit || '50', 10);
+  const offset = parseInt(req.query.offset || '0', 10);
+
+  const logs = StoreService.getWebhookLogs(productId, limit, offset);
+  const stats = StoreService.getWebhookLogStats(productId);
+  const totalLogs = db.prepare(
+    productId 
+      ? 'SELECT COUNT(*) AS count FROM payment_channel_webhook_logs WHERE product_id = ?'
+      : 'SELECT COUNT(*) AS count FROM payment_channel_webhook_logs'
+  ).get(productId);
+
+  const allProducts = db.prepare(`
+    SELECT p.* FROM products p
+    INNER JOIN payment_channel_credentials pc ON pc.product_id = p.id
+    ORDER BY p.name
+  `).all();
+
+  res.render('admin/payment-channels-webhooks', {
+    title: 'Webhook Logs',
+    active: 'payment-channels-webhooks',
+    logs,
+    stats,
+    totalLogs: totalLogs.count,
+    limit,
+    offset,
+    productId,
+    allProducts,
+    flash: takeFlash(req)
+  });
+});
+
+// ---- ENHANCEMENT 5: Connection Resend Feature -----------------------------
+router.post('/orders/:orderId/resend-connection', asyncHandler(async (req, res) => {
+  const orderId = parseInt(req.params.orderId, 10);
+  const order = StoreService.getOrder(orderId);
+
+  if (!order) {
+    flash(req, 'Order not found.', 'error');
+    return res.redirect('/admin/orders');
+  }
+
+  try {
+    const result = StoreService.resendConnectionToCustomer(orderId, req.app.get('telegramBot'));
+    if (result.success) {
+      flash(req, `Connection details resent to ${order.telegram_username}.`);
+    } else {
+      flash(req, 'Failed to resend connection.', 'error');
+    }
+  } catch (error) {
+    flash(req, `Error: ${error.message}`, 'error');
+  }
+
+  res.redirect(`/admin/orders/${orderId}`);
+}));
+
 module.exports = router;
