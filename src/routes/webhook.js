@@ -240,4 +240,28 @@ router.post('/coins/payment-status', async (req, res) => {
   }
 });
 
+// Telegram bot webhook
+router.post('/telegram', async (req, res) => {
+  try {
+    const TelegramBot = require('../telegram-bot');
+    if (!TelegramBot.isConfigured()) {
+      return res.status(400).json({ error: 'Telegram bot not configured' });
+    }
+
+    const update = req.body;
+    if (!update) {
+      return res.status(200).json({ ok: true });
+    }
+
+    // Process update asynchronously (don't wait for response)
+    TelegramBot.handleUpdate(update).catch(console.error);
+
+    // Always respond with 200 OK to Telegram immediately
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error('Telegram webhook error:', e);
+    return res.status(200).json({ ok: true }); // Always return 200 to Telegram
+  }
+});
+
 module.exports = router;

@@ -137,7 +137,38 @@ app.use((err, req, res, _next) => {
   res.status(500).render('error', locals);
 });
 
-app.listen(PORT, () => {
+// Initialize Telegram bot webhook if configured
+async function initTelegramBot() {
+  const TelegramBot = require('./telegram-bot');
+  if (!TelegramBot.isConfigured()) {
+    return;
+  }
+
+  const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+  const webhookUrl = `${baseUrl}/webhooks/telegram`;
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: webhookUrl })
+    });
+    const result = await response.json();
+    if (result.ok) {
+      console.log(`\n  ✅ Telegram bot webhook registered: ${webhookUrl}\n`);
+    } else {
+      console.error(`  ❌ Telegram webhook error: ${result.description}`);
+    }
+  } catch (e) {
+    console.error('  ❌ Failed to register Telegram webhook:', e.message);
+  }
+}
+
+app.listen(PORT, async () => {
   console.log(`\n  BlackHorse shop running:  http://localhost:${PORT}`);
   console.log(`  Admin panel:             http://localhost:${PORT}/admin\n`);
+  
+  // Register Telegram bot webhook
+  await initTelegramBot();
 });
