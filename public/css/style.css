@@ -1935,34 +1935,52 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 }
 
 @media (max-width: 640px) {
-  .product-table th,
-  .product-table td {
+  /* Admin product table mobile styling */
+  .admin-main .product-table th,
+  .admin-main .product-table td {
     padding: 10px 8px;
     font-size: 13px;
   }
-  .product-table th:nth-child(4),
-  .product-table td:nth-child(4),
-  .product-table th:nth-child(5),
-  .product-table td:nth-child(5) {
+  .admin-main .product-table th:nth-child(4),
+  .admin-main .product-table td:nth-child(4),
+  .admin-main .product-table th:nth-child(5),
+  .admin-main .product-table td:nth-child(5) {
     display: none;
   }
-  .product-table td:last-child {
+  .admin-main .product-table td:last-child {
     text-align: left;
   }
-  .product-table td:last-child div {
+  .admin-main .product-table td:last-child div {
     flex-direction: column !important;
     gap: 6px;
   }
-  .product-table td:last-child form {
+  .admin-main .product-table td:last-child form {
     margin: 0;
   }
-  .product-table td:last-child button,
-  .product-table td:last-child .btn {
+  .admin-main .product-table td:last-child button,
+  .admin-main .product-table td:last-child .btn {
     width: 100%;
     text-align: center;
     font-size: 12px;
     padding: 10px 8px;
   }
+
+  /* Customer product table mobile styling */
+  .table-wrap .product-table th,
+  .table-wrap .product-table td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  .table-wrap .product-table .col-price,
+  .table-wrap .product-table .col-stock {
+    font-size: 11px;
+  }
+  .table-wrap .product-table .col-buy button {
+    padding: 8px 12px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
   .admin-bar {
     flex-direction: column;
     gap: 10px;
@@ -1981,63 +1999,87 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 }
 
 @media (max-width: 480px) {
-  .product-table th,
-  .product-table td {
+  /* Admin product table block layout on small phones */
+  .admin-main .product-table th,
+  .admin-main .product-table td {
     padding: 8px 6px;
     font-size: 12px;
   }
-  .product-table tbody tr {
+  .admin-main .product-table tbody tr {
     display: block;
     border-bottom: 2px solid var(--border);
     margin-bottom: 8px;
     padding-bottom: 8px;
   }
-  .product-table tbody td {
+  .admin-main .product-table tbody td {
     display: block;
     text-align: left;
     padding: 6px 0;
     border: none;
   }
-  .product-table tbody td:first-child {
+  .admin-main .product-table tbody td:first-child {
     padding-top: 0;
   }
-  .product-table tbody td:last-child {
+  .admin-main .product-table tbody td:last-child {
     padding-top: 10px;
     border-top: 1px solid var(--border);
   }
-  .product-table thead {
+  .admin-main .product-table thead {
     display: none;
   }
-  .product-table tbody td div[style*="font-weight"] {
+  .admin-main .product-table tbody td div[style*="font-weight"] {
     margin: 2px 0;
   }
-  .product-table tbody td div.muted {
+  .admin-main .product-table tbody td div.muted {
     font-size: 11px;
     margin: 4px 0;
   }
-  .product-table td:last-child {
+  .admin-main .product-table td:last-child {
     text-align: left;
     padding-top: 10px;
   }
-  .product-table td:last-child div {
+  .admin-main .product-table td:last-child div {
     flex-direction: column !important;
     gap: 6px;
   }
-  .product-table td:last-child form {
+  .admin-main .product-table td:last-child form {
     margin: 0;
     display: flex;
     width: 100%;
   }
-  .product-table td:last-child button,
-  .product-table td:last-child .btn {
+  .admin-main .product-table td:last-child button,
+  .admin-main .product-table td:last-child .btn {
     flex: 1;
     text-align: center;
     font-size: 12px;
     padding: 10px 6px;
     margin: 0;
   }
-  .table-wrap {
+  .admin-main .table-wrap {
     border-radius: 8px;
     overflow-x: visible;
+  }
+
+  /* Customer product table on small phones */
+  .table-wrap .product-table th,
+  .table-wrap .product-table td {
+    padding: 6px 4px;
+    font-size: 11px;
+  }
+  .table-wrap .product-table .col-name {
+    min-width: 130px;
+  }
+  .table-wrap .product-table .col-price,
+  .table-wrap .product-table .col-stock {
+    font-size: 10px;
+    padding: 4px 2px;
+  }
+  .table-wrap .product-table .col-buy button {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+  .table-wrap {
+    border-radius: 6px;
+    overflow-x: auto;
   }
 }
